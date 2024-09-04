@@ -1,6 +1,6 @@
 # Breaking bad
 
-*"Quant is so hard boohoo."*
+*"What is going on?"*
 
 <p align="center">
     <img src="./asset/partnership.jpg" width=40% height=40%>
