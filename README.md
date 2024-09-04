@@ -1,6 +1,8 @@
 # Breaking bad
 
-![](./asset/partnership.jpg)
+<p align="center">
+    <img src="./asset/partnership.jpg" width=40% height=40%>
+</p>
 
 ## References
 
