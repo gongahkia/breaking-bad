@@ -1,5 +1,7 @@
 # Breaking bad
 
+*"Quant is so hard boohoo."*
+
 <p align="center">
     <img src="./asset/partnership.jpg" width=40% height=40%>
 </p>
