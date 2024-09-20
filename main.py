@@ -2,6 +2,8 @@
     # to create ./lib/ and put all black scholz functions there
     # put all execution code here
 import numpy as np 
+from scipy.stats import norm
+
 
 
 def option_pricing(S0, X, r, q, t, v):
@@ -26,9 +28,15 @@ def option_pricing(S0, X, r, q, t, v):
     d1 = (np.log(S0 / X) + (r - q + (v**2) / 2) * t) / (v * np.sqrt(t))
     d2 = d1 - v * np.sqrt(t)
 
+    #calculate the cumulative standard normal distribution of d1 and d2 (and their inverse)
+    nd1 = norm.cdf(d1)
+    nd2 = norm.cdf(d2)
+    nd_1 = norm.cdf(-d1)
+    nd_2 = norm.cdf(-d2)
+
     # Calculate the call and put option prices
-    C = 1
-    P = 1
+    C = S0 * np.exp(-q * t) * nd1 - X * np.exp(-r * t) * nd2
+    P = X * np.exp(-r * t) * nd_2 - S0 * np.exp(-q * t) * nd_1
 
     return C, P
 def main():
