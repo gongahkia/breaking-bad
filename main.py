@@ -1,10 +1,5 @@
-# ~ main function ~
-    # to create ./lib/ and put all black scholz functions there
-    # put all execution code here
 import numpy as np 
 from scipy.stats import norm
-
-
 
 def option_pricing(S0, X, r, q, t, v):
     """
@@ -39,8 +34,14 @@ def option_pricing(S0, X, r, q, t, v):
     P = X * np.exp(-r * t) * nd_2 - S0 * np.exp(-q * t) * nd_1
 
     return C, P
+
 def main():
+    """
+    This is the main function within which
+    all execution code is found and run
+    """
     print("breaking bad")
+
     # Current price of the stock, also known as its spot price;
     S0 = 1
     # Strike price;
@@ -56,7 +57,6 @@ def main():
     
     result = option_pricing(S0, X, r, q, t, v)
     print(result)
-
 
     return
 
