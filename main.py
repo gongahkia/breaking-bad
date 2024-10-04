@@ -35,6 +35,23 @@ def option_pricing(S0, X, r, q, t, v):
 
     return C, P
 
+def get_user_input(prompt, default_value):
+    # This function asks the user for input and returns the value.
+    user_input = input(f"{prompt} (default {default_value}): ")
+    return float(user_input) if user_input else default_value
+
+# Prompting user for details with default values
+def ask_user_for_details():
+    S0 = get_user_input("Enter the current price of the stock (spot price)", 1)
+    X = get_user_input("Enter the strike price", 1)
+    t = get_user_input("Enter the time to expiration (in years)", 1)
+    r = get_user_input("Enter the risk-free interest rate (as a decimal, e.g., 0.05 for 5%)", 1)
+    v = get_user_input("Enter the expected volatility (as a decimal, e.g., 0.2 for 20%)", 1)
+    q = get_user_input("Enter the expected dividend yield (as a decimal, e.g., 0.03 for 3%)", 1)
+
+    # Return the collected inputs
+    return S0, X, r, q, t, v
+
 def main():
     """
     This is the main function within which
@@ -42,19 +59,10 @@ def main():
     """
     print("breaking bad")
 
-    # Current price of the stock, also known as its spot price;
-    S0 = 1
-    # Strike price;
-    X = 1
-    # Time to the expiration of the options contract;
-    t = 1
-    # Risk-free interest rate, or the rate specified in the option for a given stable asset or short-dated government bonds such as US Treasury bills;
-    r = 1
-    # Expected volatility or unpredictability of the stock is expressed as the standard deviation of the stock price; and
-    v = 1
-    # Expected dividend yield.
-    q = 1
-    
+    # Collect user details
+    S0, X, r, q, t, v = ask_user_for_details()
+
+    # Call the option_pricing function with the collected details 
     result = option_pricing(S0, X, r, q, t, v)
     print(result)
 
