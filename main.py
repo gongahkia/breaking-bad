@@ -13,7 +13,6 @@ def option_pricing(S0, X, r, q, t, v):
     t : float : Time to expiration (in years)
     v : float : Volatility of the stock price
 
-
     Returns:
     C : float : Call option price
     P : float : Put option price
@@ -64,7 +63,8 @@ def main():
 
     # Call the option_pricing function with the collected details 
     result = option_pricing(S0, X, r, q, t, v)
-    print(result)
+    print("call price:", result[0]) 
+    print("put price: ", result[1]) 
 
     return
 
