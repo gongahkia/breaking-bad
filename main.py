@@ -44,9 +44,9 @@ def ask_user_for_details():
     S0 = get_user_input("Enter the current price of the stock (spot price)", 1)
     X = get_user_input("Enter the strike price", 1)
     t = get_user_input("Enter the time to expiration (in years)", 1)
-    r = get_user_input("Enter the risk-free interest rate (as a decimal, e.g., 0.05 for 5%)", 1)
-    v = get_user_input("Enter the expected volatility (as a decimal, e.g., 0.2 for 20%)", 1)
-    q = get_user_input("Enter the expected dividend yield (as a decimal, e.g., 0.03 for 3%)", 1)
+    r = get_user_input("Enter the risk-free interest rate (as a whole number, e.g., 5 for 5%)", 1)
+    v = get_user_input("Enter the expected volatility (as a whole number, e.g., 20 for 20%)", 1)
+    q = get_user_input("Enter the expected dividend yield (as a whole number, e.g., 3 for 3.1%)", 1)
 
     # Return the collected inputs
     return S0, X, r, q, t, v
