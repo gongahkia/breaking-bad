@@ -63,8 +63,9 @@ def main():
 
     # Call the option_pricing function with the collected details 
     result = option_pricing(S0, X, r, q, t, v)
-    print("call price:", result[0]) 
-    print("put price: ", result[1]) 
+    print("Call price:", round(result[0], 3)) 
+    print("Put price:", round(result[1], 3))
+
 
     return
 
