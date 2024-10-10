@@ -1,3 +1,6 @@
+# credit where credit is due
+# https://github.com/vholley/Yahoo-Finance-Web-Scraper
+
 import pandas as pd
 import urllib.request as ur
 from bs4 import BeautifulSoup
