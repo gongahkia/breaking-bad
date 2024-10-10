@@ -6,6 +6,17 @@
     <img src="./asset/partnership.jpg" width=40% height=40%>
 </p>
 
+## Usage
+
+This is to run the `breaking-bad` CLI program.
+
+```console
+$ make
+```
+
+>[!NOTE]
+> The `breaking-bad` web app is in development right now.
+
 ## References
 
 * [Black Scholes Model](https://www.omnicalculator.com/finance/black-scholes) by Omni Calculator
