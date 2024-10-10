@@ -1,10 +1,6 @@
 # Breaking bad
 
-*"What is going on?"*
-
-<p align="center">
-    <img src="./asset/partnership.jpg" width=40% height=40%>
-</p>
+Fair option pricing for dummies.
 
 ## Usage
 
@@ -14,8 +10,10 @@ This is to run the `breaking-bad` CLI program.
 $ make
 ```
 
->[!NOTE]
-> The `breaking-bad` web app is in development right now.
+<p align="center">
+    <img src="./asset/partnership.jpg" width=40% height=40%><br>
+    <i>"What is going on?"</i>
+</p>
 
 ## References
 
