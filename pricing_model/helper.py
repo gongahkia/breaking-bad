@@ -1,4 +1,4 @@
-# helper functions to simplify main file code
+# helper functions to simplify main file code (may not be needed anymore)
 
 def get_user_input(prompt, default_value):
     user_input = input(f"{prompt} (default {default_value}): ")
