@@ -1,5 +1,6 @@
 // src/OptionPricingCalculator.js
 import React, { useState } from 'react';
+import './OptionPricingCalculator.css'; // Import the CSS file
 
 function OptionPricingCalculator() {
   // State variables to hold user inputs
@@ -46,11 +47,21 @@ function OptionPricingCalculator() {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Option Pricing Calculator</h1>
+    <div className="container">
+      <h1 className="title">Option Pricing Calculator</h1>
+
+      {/* Introduction to the Black-Scholes Model */}
+      <div className="introduction">
+        <p>
+          Welcome to the Option Pricing Calculator! This project uses the Black-Scholes model to calculate the prices of European call and put options. The Black-Scholes model is a mathematical model that helps in estimating the fair value of options, taking into account factors such as the current stock price, strike price, time to expiration, risk-free interest rate, volatility, and dividend yield.
+        </p>
+        <p>
+          Please enter the parameters below to see the estimated prices for both call and put options.
+        </p>
+      </div>
 
       {/* Input fields for user to enter parameters */}
-      <div>
+      <div className="form-group">
         <label>
           Initial Stock Price (S0):
           <input
@@ -60,7 +71,7 @@ function OptionPricingCalculator() {
           />
         </label>
       </div>
-      <div>
+      <div className="form-group">
         <label>
           Strike Price (X):
           <input
@@ -70,7 +81,7 @@ function OptionPricingCalculator() {
           />
         </label>
       </div>
-      <div>
+      <div className="form-group">
         <label>
           Risk-free Interest Rate (r):
           <input
@@ -81,7 +92,7 @@ function OptionPricingCalculator() {
           />
         </label>
       </div>
-      <div>
+      <div className="form-group">
         <label>
           Dividend Yield (q):
           <input
@@ -92,7 +103,7 @@ function OptionPricingCalculator() {
           />
         </label>
       </div>
-      <div>
+      <div className="form-group">
         <label>
           Time to Expiration (t in years):
           <input
@@ -103,7 +114,7 @@ function OptionPricingCalculator() {
           />
         </label>
       </div>
-      <div>
+      <div className="form-group">
         <label>
           Expected Volatility (v):
           <input
@@ -119,14 +130,14 @@ function OptionPricingCalculator() {
       </div>
 
       {/* Button to trigger the calculation */}
-      <button onClick={handleCalculate}>Calculate</button>
+      <button className="calculate-button" onClick={handleCalculate}>Calculate</button>
 
       {/* Display error message if any */}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="error-message">{error}</p>}
 
       {/* Display the results if available */}
       {result.C !== null && result.P !== null && (
-        <div>
+        <div className="results">
           <h2>Results:</h2>
           <p>Call Option Price (C): {result.C.toFixed(4)}</p>
           <p>Put Option Price (P): {result.P.toFixed(4)}</p>
