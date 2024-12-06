@@ -2,14 +2,6 @@
 
 Fair option pricing for dummies.
 
-## Usage
-
-This is to run the `breaking-bad` CLI program.
-
-```console
-$ make
-```
-
 <p align="center">
     <img src="./asset/partnership.jpg" width=40% height=40%><br>
     <i>"What is going on?"</i>

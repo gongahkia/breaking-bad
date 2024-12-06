@@ -48,7 +48,8 @@ function OptionPricingCalculator() {
 
   return (
     <div className="container">
-      <h1 className="title">Option Pricing Calculator</h1>
+      <h1 className="title">Breaking Bad</h1>
+      <h2 className="title">Option Pricing Calculator</h1>
 
       {/* Introduction to the Black-Scholes Model */}
       <div className="introduction">
