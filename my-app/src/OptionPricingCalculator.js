@@ -51,15 +51,27 @@ function OptionPricingCalculator() {
       <h1 className="title">Breaking Bad</h1>
       <h2 className="title">Option Pricing Calculator</h2>
 
-      {/* Introduction to the Black-Scholes Model */}
-      <div className="introduction">
-        <p>
-          Welcome to the Option Pricing Calculator! This project uses the Black-Scholes model to calculate the prices of European call and put options. The Black-Scholes model is a mathematical model that helps in estimating the fair value of options, taking into account factors such as the current stock price, strike price, time to expiration, risk-free interest rate, volatility, and dividend yield.
-        </p>
-        <p>
-          Please enter the parameters below to see the estimated prices for both call and put options.
-        </p>
-      </div>
+      {/* Introduction to the Black-Scholes Model */}     
+    <div className="introduction container">
+      <p className="intro-header">
+        Welcome to the <span className="highlight">Option Pricing Calculator</span>!
+      </p>
+      <p className="intro-description">
+        This project uses the <span className="highlight">Black-Scholes model</span> to calculate the prices of European call and put options. 
+        The Black-Scholes model is a mathematical model that helps estimate the fair value of options, considering factors such as:
+      </p>
+      <ul className="intro-list">
+        <li>Current stock price</li>
+        <li>Strike price</li>
+        <li>Time to expiration</li>
+        <li>Risk-free interest rate</li>
+        <li>Volatility</li>
+        <li>Dividend yield</li>
+      </ul>
+      <p className="intro-prompt">
+        Please enter the parameters below to see the estimated prices for both call and put options.
+      </p>
+    </div>
 
       {/* Input fields for user to enter parameters */}
       <div className="form-group">
