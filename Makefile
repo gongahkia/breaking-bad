@@ -1,9 +1,6 @@
-all:start
+all:configure
 
 configure:
-	@echo "(1/1) installing dependancies via pip..."
+	@echo "installing dependancies..."
 	@pip install scipy pandas urllib bs4 requests scrapy
-
-start:main.py
-	@echo "executing main.py..."
-	@clear && python3 main.py
+	@npm install express

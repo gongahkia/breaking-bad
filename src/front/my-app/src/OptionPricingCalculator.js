@@ -22,7 +22,7 @@ function OptionPricingCalculator() {
 
     try {
       // Make a POST request to the backend
-      const response = await fetch('http://localhost:5000/calculate', {
+      const response = await fetch('http://localhost:8000/api/data', { // Updated endpoint
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -48,30 +48,7 @@ function OptionPricingCalculator() {
 
   return (
     <div className="container">
-      <h1 className="title">Breaking Bad</h1>
-      <h2 className="title">Option Pricing Calculator</h2>
-
-      {/* Introduction to the Black-Scholes Model */}     
-    <div className="introduction container">
-      <p className="intro-header">
-        Welcome to the <span className="highlight">Option Pricing Calculator</span>!
-      </p>
-      <p className="intro-description">
-        This project uses the <span className="highlight">Black-Scholes model</span> to calculate the prices of European call and put options. 
-        The Black-Scholes model is a mathematical model that helps estimate the fair value of options, considering factors such as:
-      </p>
-      <ul className="intro-list">
-        <li>Current stock price</li>
-        <li>Strike price</li>
-        <li>Time to expiration</li>
-        <li>Risk-free interest rate</li>
-        <li>Volatility</li>
-        <li>Dividend yield</li>
-      </ul>
-      <p className="intro-prompt">
-        Please enter the parameters below to see the estimated prices for both call and put options.
-      </p>
-    </div>
+      <h1 className="title">Option Pricing Calculator</h1>
 
       {/* Input fields for user to enter parameters */}
       <div className="form-group">
