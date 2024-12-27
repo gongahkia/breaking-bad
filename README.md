@@ -1,3 +1,6 @@
+> [!WARNING]
+> Code here is mostly broken. Run at your own risk.
+
 # Breaking bad
 
 Fair option pricing for dummies.
