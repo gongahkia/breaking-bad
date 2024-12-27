@@ -1,5 +1,5 @@
 > [!WARNING]
-> Code here is mostly broken. Run at your own risk.
+> Code here is mostly broken. Run at your own risk. It might be fixed in the future.
 
 # Breaking bad
 
