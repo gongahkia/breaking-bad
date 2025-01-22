@@ -1,6 +1,3 @@
-> [!WARNING]
-> Code here is mostly broken. Run at your own risk. It might be fixed in the future.
-
 # Breaking bad
 
 Fair option pricing for dummies.
@@ -10,13 +7,30 @@ Fair option pricing for dummies.
     <i>"What is going on?"</i>
 </p>
 
-## Usage
+## Contributors
 
-```console
-$ make
-```
+<table>
+	<tbody>
+        <tr>
+	    <td align="center">
+                <a href="https://github.com/gongahkia">
+                    <img src="https://avatars.githubusercontent.com/u/117062305?v=4" width="100;" alt="gongahkia"/>
+                    <br/>
+                    <sub><b>gongahkia</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/https://github.com/richardleii58">
+                    <img src="https://avatars.githubusercontent.com/u/174111738?v=4" width="100;" alt="richardleii58"/>
+                    <br/>
+                    <sub><b>richardleii58</b></sub>
+                </a>
+            </td>
+        </tr>
+	<tbody>
+</table>
 
-## References
+## Research
 
-* [Black Scholes Model](https://www.omnicalculator.com/finance/black-scholes) by Omni Calculator
-* [Build this if you want to break into quant trading](https://youtu.be/lY-NP4X455U?si=YP7PDBOvdYpkIcpa) by Coding Jesus
+* [*Black Scholes Model*](https://www.omnicalculator.com/finance/black-scholes) by Omni Calculator
+* [*Build this if you want to break into quant trading*](https://youtu.be/lY-NP4X455U?si=YP7PDBOvdYpkIcpa) by Coding Jesus
