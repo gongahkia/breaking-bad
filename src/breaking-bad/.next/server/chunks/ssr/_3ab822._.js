@@ -74,28 +74,44 @@ var { r: __turbopack_require__, f: __turbopack_module_context__, i: __turbopack_
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_import__("[project]/node_modules/next/dist/build/webpack/loaders/next-flight-loader/server-reference.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$app$2d$render$2f$encryption$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_import__("[project]/node_modules/next/dist/server/app-render/encryption.js [app-rsc] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$simple$2d$statistics$2f$dist$2f$simple$2d$statistics$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_import__("[project]/node_modules/simple-statistics/dist/simple-statistics.mjs [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$action$2d$validate$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_import__("[project]/node_modules/next/dist/build/webpack/loaders/next-flight-loader/action-validate.js [app-rsc] (ecmascript)");
 ;
 ;
-async function /*#__TURBOPACK_DISABLE_EXPORT_MERGING__*/ calculateOption(inputs) {
-    await new Promise((resolve)=>setTimeout(resolve, 800));
-    const { stockPrice, strikePrice, interestRate, timeToExpiration, volatility } = inputs;
-    const d1 = (Math.log(stockPrice / strikePrice) + (interestRate + Math.pow(volatility, 2) / 2) * timeToExpiration) / (volatility * Math.sqrt(timeToExpiration));
-    const callPrice = (stockPrice * normalCDF(d1)).toFixed(2);
-    const putPrice = (strikePrice * normalCDF(-d1)).toFixed(2);
-    return {
-        callOptionPrice: callPrice,
-        putOptionPrice: putPrice,
-        impliedVolatility: (volatility * 100).toFixed(1) + "%",
-        delta: normalCDF(d1).toFixed(3),
-        timestamp: new Date().toISOString()
-    };
-}
+;
+// Use simple-statistics to compute the normal CDF via the error function
 function normalCDF(x) {
-    const t = 1 / (1 + 0.2316419 * Math.abs(x));
-    const d = 0.3989423 * Math.exp(-x * x / 2);
-    const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
-    return x > 0 ? 1 - p : p;
+    return 0.5 * (1 + __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$simple$2d$statistics$2f$dist$2f$simple$2d$statistics$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__.erf(x / Math.SQRT2));
+}
+async function /*#__TURBOPACK_DISABLE_EXPORT_MERGING__*/ calculateOption(inputs) {
+    // Simulate a short delay (e.g., API call, computation time, etc.)
+    await new Promise((resolve)=>setTimeout(resolve, 800));
+    const { stockPrice: S, strikePrice: X, interestRate: r, dividendYield: q, timeToExpiration: t, volatility: sigma } = inputs;
+    // Compute d1, d2 according to the Black–Scholes model:
+    const d1 = (Math.log(S / X) + (r - q + 0.5 * sigma * sigma) * t) / (sigma * Math.sqrt(t));
+    const d2 = d1 - sigma * Math.sqrt(t);
+    // Discount factors
+    const eNegQT = Math.exp(-q * t);
+    const eNegRT = Math.exp(-r * t);
+    // Calculate N(d1), N(d2), etc., using the normalCDF function from simple-statistics
+    const N_d1 = normalCDF(d1);
+    const N_d2 = normalCDF(d2);
+    const N_negd1 = normalCDF(-d1);
+    const N_negd2 = normalCDF(-d2);
+    // Black–Scholes formulas for European Call/Put with continuous dividend yield:
+    const callOptionPrice = S * eNegQT * N_d1 - X * eNegRT * N_d2;
+    const putOptionPrice = X * eNegRT * N_negd2 - S * eNegQT * N_negd1;
+    // Delta for a call option
+    const deltaCall = eNegQT * N_d1;
+    return {
+        callOptionPrice: callOptionPrice.toFixed(2),
+        putOptionPrice: putOptionPrice.toFixed(2),
+        impliedVolatility: (sigma * 100).toFixed(1) + "%",
+        delta: deltaCall.toFixed(3),
+        timestamp: new Date().toISOString(),
+        callFormula: "C = S e^(-q t) N(d1) - X e^(-r t) N(d2)",
+        putFormula: "P = X e^(-r t) N(-d2) - S e^(-q t) N(-d1)"
+    };
 }
 ;
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$action$2d$validate$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["ensureServerEntryExports"])([

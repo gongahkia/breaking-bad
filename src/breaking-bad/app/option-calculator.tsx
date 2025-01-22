@@ -50,6 +50,9 @@ export default function OptionCalculator() {
     <div className="w-full max-w-xl mx-auto p-6 space-y-6 bg-white rounded-lg shadow-sm">
       <h1 className="text-2xl font-semibold text-center text-[#0088FF]">Breaking Bad's Option Pricing Calculator</h1>
 
+      <div className="Description">
+        <h3 className="Body">Values are inputted in raw value, rather then whole number percentages.</h3>
+      </div>
       <div className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="stock-price">Initial Stock Price (S0):</label>
