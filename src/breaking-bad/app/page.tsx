@@ -1,5 +1,5 @@
-import OptionCalculator from './option-calculator'
+import OptionCalculatorWrapper from './OptionCalculatorWrapper'
 
 export default function Home() {
-  return <OptionCalculator />
+  return <OptionCalculatorWrapper />
 }
