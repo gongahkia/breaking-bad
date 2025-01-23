@@ -59,29 +59,29 @@ export default function OptionCalculator() {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-2xl mx-auto p-8 bg-gradient-to-br from-white to-blue-50 rounded-lg shadow-lg"
+      className="w-full max-w-2xl mx-auto p-8 bg-white rounded-xl shadow-2xl"
     >
-      <h1 className="text-3xl font-bold text-center text-indigo-600 mb-6">
+      <h1 className="text-4xl font-bold text-center text-indigo-700 mb-8">
         Option Pricing Calculator
       </h1>
 
-      <p className="text-center text-gray-600 mb-4">
+      <p className="text-center text-gray-600 mb-8">
         Enter the values below to calculate option prices.
       </p>
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Input Fields */}
         {[
-          { id: "stock-price", label: "Initial Stock Price (S0):", defaultValue: "100" },
-          { id: "strike-price", label: "Strike Price (X):", defaultValue: "100" },
-          { id: "interest-rate", label: "Risk-free Interest Rate (r):", defaultValue: "0.05", step: "0.01" },
-          { id: "dividend-yield", label: "Dividend Yield (q):", defaultValue: "0", step: "0.01" },
-          { id: "expiration-time", label: "Time to Expiration (t in years):", defaultValue: "1", step: "0.1" },
+          { id: "stock-price", label: "Initial Stock Price (S0)", defaultValue: "100" },
+          { id: "strike-price", label: "Strike Price (X)", defaultValue: "100" },
+          { id: "interest-rate", label: "Risk-free Interest Rate (r)", defaultValue: "0.05", step: "0.01" },
+          { id: "dividend-yield", label: "Dividend Yield (q)", defaultValue: "0", step: "0.01" },
+          { id: "expiration-time", label: "Time to Expiration (t in years)", defaultValue: "1", step: "0.1" },
         ].map(({ id, label, defaultValue, step }) => (
-          <div key={id} className="space-y-2">
+          <motion.div key={id} className="space-y-2" whileHover={{ scale: 1.02 }}>
             <label htmlFor={id} className="block text-sm font-medium text-gray-700">
               {label}
             </label>
@@ -90,15 +90,15 @@ export default function OptionCalculator() {
               id={id}
               defaultValue={defaultValue}
               step={step || undefined}
-              className="w-full h-10 px-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:ring-indigo-200"
+              className="w-full h-12 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
             />
-          </div>
+          </motion.div>
         ))}
 
         {/* Volatility Input */}
-        <div className="space-y-2">
+        <motion.div className="space-y-2" whileHover={{ scale: 1.02 }}>
           <label htmlFor="volatility" className="block text-sm font-medium text-gray-700">
-            Expected Volatility (v):
+            Expected Volatility (v)
           </label>
           <input
             type="number"
@@ -106,7 +106,7 @@ export default function OptionCalculator() {
             value={volatility}
             onChange={(e) => setVolatility(Number(e.target.value))}
             step="0.01"
-            className="w-full h-10 px-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring focus:ring-indigo-200"
+            className="w-full h-12 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
           />
           <input
             type="range"
@@ -115,10 +115,10 @@ export default function OptionCalculator() {
             min="0"
             max="1"
             step="0.01"
-            className="w-full mt-2"
+            className="w-full mt-2 accent-indigo-600"
           />
-          <div className="text-sm text-gray-500">{volatility.toFixed(2)}</div>
-        </div>
+          <div className="text-sm text-gray-500 text-right">{volatility.toFixed(2)}</div>
+        </motion.div>
 
         {/* Calculate Button */}
         <motion.button
@@ -126,7 +126,7 @@ export default function OptionCalculator() {
           whileTap={{ scale: 0.95 }}
           onClick={handleCalculate}
           disabled={isCalculating}
-          className={`w-full h-12 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-300 ${
+          className={`w-full h-14 bg-indigo-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out ${
             isCalculating ? "opacity-70 cursor-not-allowed" : ""
           }`}
         >
@@ -138,7 +138,7 @@ export default function OptionCalculator() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-red-500 text-center text-sm"
+            className="text-red-500 text-center text-sm bg-red-50 p-3 rounded-lg"
           >
             {error}
           </motion.div>
@@ -150,23 +150,23 @@ export default function OptionCalculator() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="mt-6 p-4 bg-green-50 border-l-4 border-green-400 rounded-lg shadow-md"
+            className="mt-8 p-6 bg-green-50 border-l-4 border-green-400 rounded-lg shadow-lg"
           >
-            <h2 className="text-lg font-semibold text-green-700">Results:</h2>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-4">
+            <h2 className="text-xl font-semibold text-green-700 mb-4">Results:</h2>
+            <div className="grid grid-cols-2 gap-6">
               {[
                 { label: "Call Option Price", value: `$${result.callOptionPrice}` },
                 { label: "Put Option Price", value: `$${result.putOptionPrice}` },
                 { label: "Implied Volatility", value: result.impliedVolatility },
                 { label: "Delta", value: result.delta },
               ].map(({ label, value }) => (
-                <div key={label}>
+                <motion.div key={label} whileHover={{ scale: 1.05 }} className="bg-white p-4 rounded-lg shadow">
                   <p className="text-sm text-gray-500">{label}</p>
-                  <p className="text-lg font-semibold text-indigo-600">{value}</p>
-                </div>
+                  <p className="text-xl font-bold text-indigo-600">{value}</p>
+                </motion.div>
               ))}
             </div>
-            <p className="text-xs text-gray-400 mt-4 text-right">
+            <p className="text-xs text-gray-400 mt-6 text-right">
               Last calculated at {new Date(result.timestamp).toLocaleString()}
             </p>
           </motion.div>
