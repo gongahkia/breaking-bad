@@ -108,6 +108,7 @@ export default function OptionCalculator() {
             step="0.01"
             className="w-full h-12 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
           />
+          <br></br>
           <input
             type="range"
             value={volatility}
