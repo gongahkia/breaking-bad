@@ -13,7 +13,10 @@ interface CalculationResult {
 }
 
 export default function OptionCalculator() {
-  const [volatility, setVolatility] = useState(0.16);
+  // Store user-facing percentage values from 0 - 100
+  const [volatilityPercent, setVolatilityPercent] = useState(16); // e.g. 16% => 0.16
+  const [interestRatePercent, setInterestRatePercent] = useState(5); // e.g. 5% => 0.05
+
   const [isCalculating, setIsCalculating] = useState(false);
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -23,21 +26,24 @@ export default function OptionCalculator() {
     setError(null);
 
     try {
+      // Get other inputs (already in numeric form)
       const stockPrice = Number.parseFloat(
         (document.getElementById("stock-price") as HTMLInputElement).value
       );
       const strikePrice = Number.parseFloat(
         (document.getElementById("strike-price") as HTMLInputElement).value
       );
-      const interestRate = Number.parseFloat(
-        (document.getElementById("interest-rate") as HTMLInputElement).value
-      );
+      // Converting interest rate from 0-100% to 0-1
+      const interestRate = interestRatePercent / 100;
+
       const dividendYield = Number.parseFloat(
         (document.getElementById("dividend-yield") as HTMLInputElement).value
       );
       const timeToExpiration = Number.parseFloat(
         (document.getElementById("expiration-time") as HTMLInputElement).value
       );
+      // Converting volatility from 0-100% to 0-1
+      const volatility = volatilityPercent / 100;
 
       const inputs = {
         stockPrice,
@@ -68,58 +74,123 @@ export default function OptionCalculator() {
         Option Pricing Calculator
       </h1>
 
-      <p className="text-center text-gray-600 mb-8">
-        Enter the values below to calculate option prices.
-      </p>
-
       <div className="space-y-8">
-        {/* Input Fields */}
-        {[
-          { id: "stock-price", label: "Initial Stock Price (S0)", defaultValue: "100" },
-          { id: "strike-price", label: "Strike Price (X)", defaultValue: "100" },
-          { id: "interest-rate", label: "Risk-free Interest Rate (r)", defaultValue: "0.05", step: "0.01" },
-          { id: "dividend-yield", label: "Dividend Yield (q)", defaultValue: "0", step: "0.01" },
-          { id: "expiration-time", label: "Time to Expiration (t in years)", defaultValue: "1", step: "0.1" },
-        ].map(({ id, label, defaultValue, step }) => (
-          <motion.div key={id} className="space-y-2" whileHover={{ scale: 1.02 }}>
-            <label htmlFor={id} className="block text-sm font-medium text-gray-700">
-              {label}
-            </label>
-            <input
-              type="number"
-              id={id}
-              defaultValue={defaultValue}
-              step={step || undefined}
-              className="w-full h-12 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-            />
-          </motion.div>
-        ))}
+        {/* Stock Price */}
+        <div className="space-y-2">
+          <label
+            htmlFor="stock-price"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Initial Stock Price (S0)
+          </label>
+          <input
+            type="number"
+            id="stock-price"
+            defaultValue="100"
+            className="w-full h-12 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
 
-        {/* Volatility Input */}
-        <motion.div className="space-y-2" whileHover={{ scale: 1.02 }}>
-          <label htmlFor="volatility" className="block text-sm font-medium text-gray-700">
-            Expected Volatility (v)
+        {/* Strike Price */}
+        <div className="space-y-2">
+          <label
+            htmlFor="strike-price"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Strike Price (X)
+          </label>
+          <input
+            type="number"
+            id="strike-price"
+            defaultValue="100"
+            className="w-full h-12 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+
+        {/* Interest Rate (0-100% Display) */}
+        <div className="space-y-2">
+          <label
+            htmlFor="interest-rate"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Risk-free Interest Rate (%)
+          </label>
+          <input
+            type="number"
+            id="interest-rate"
+            value={interestRatePercent}
+            onChange={(e) => setInterestRatePercent(Number(e.target.value))}
+            className="w-full h-12 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <p className="text-sm text-right text-gray-600">
+            {interestRatePercent.toFixed(2)}%
+          </p>
+        </div>
+
+        {/* Dividend Yield */}
+        <div className="space-y-2">
+          <label
+            htmlFor="dividend-yield"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Dividend Yield (q)
+          </label>
+          <input
+            type="number"
+            id="dividend-yield"
+            defaultValue="0"
+            step="0.01"
+            className="w-full h-12 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+
+        {/* Time to Expiration */}
+        <div className="space-y-2">
+          <label
+            htmlFor="expiration-time"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Time to Expiration (t in years)
+          </label>
+          <input
+            type="number"
+            id="expiration-time"
+            defaultValue="1"
+            step="0.1"
+            className="w-full h-12 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+
+        {/* Volatility (0-100% Display) */}
+        <div className="space-y-2">
+          <label
+            htmlFor="volatility"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Expected Volatility (%)
           </label>
           <input
             type="number"
             id="volatility"
-            value={volatility}
-            onChange={(e) => setVolatility(Number(e.target.value))}
-            step="0.01"
-            className="w-full h-12 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+            value={volatilityPercent}
+            onChange={(e) => setVolatilityPercent(Number(e.target.value))}
+            step="0.1"
+            className="w-full h-12 px-4 mb-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-          <br></br>
+          {/* Optional slider from 0 to 100 */}
           <input
             type="range"
-            value={volatility}
-            onChange={(e) => setVolatility(Number(e.target.value))}
+            value={volatilityPercent}
+            onChange={(e) => setVolatilityPercent(Number(e.target.value))}
             min="0"
-            max="1"
-            step="0.01"
-            className="w-full mt-2 accent-indigo-600"
+            max="100"
+            step="1"
+            className="w-full accent-indigo-600"
           />
-          <div className="text-sm text-gray-500 text-right">{volatility.toFixed(2)}</div>
-        </motion.div>
+          <div className="text-sm text-gray-500 text-right">
+            {volatilityPercent.toFixed(1)}%
+          </div>
+        </div>
 
         {/* Calculate Button */}
         <motion.button
@@ -127,7 +198,7 @@ export default function OptionCalculator() {
           whileTap={{ scale: 0.95 }}
           onClick={handleCalculate}
           disabled={isCalculating}
-          className={`w-full h-14 bg-indigo-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out ${
+          className={`w-full h-14 bg-indigo-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ${
             isCalculating ? "opacity-70 cursor-not-allowed" : ""
           }`}
         >
@@ -153,7 +224,9 @@ export default function OptionCalculator() {
             transition={{ delay: 0.2 }}
             className="mt-8 p-6 bg-green-50 border-l-4 border-green-400 rounded-lg shadow-lg"
           >
-            <h2 className="text-xl font-semibold text-green-700 mb-4">Results:</h2>
+            <h2 className="text-xl font-semibold text-green-700 mb-4">
+              Results:
+            </h2>
             <div className="grid grid-cols-2 gap-6">
               {[
                 { label: "Call Option Price", value: `$${result.callOptionPrice}` },
@@ -161,7 +234,11 @@ export default function OptionCalculator() {
                 { label: "Implied Volatility", value: result.impliedVolatility },
                 { label: "Delta", value: result.delta },
               ].map(({ label, value }) => (
-                <motion.div key={label} whileHover={{ scale: 1.05 }} className="bg-white p-4 rounded-lg shadow">
+                <motion.div
+                  key={label}
+                  whileHover={{ scale: 1.05 }}
+                  className="bg-white p-4 rounded-lg shadow"
+                >
                   <p className="text-sm text-gray-500">{label}</p>
                   <p className="text-xl font-bold text-indigo-600">{value}</p>
                 </motion.div>
