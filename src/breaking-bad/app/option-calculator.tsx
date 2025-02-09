@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { calculateOption } from "./actions/calculate";
+import StockTicker from "./StockTicker";
 
 interface CalculationResult {
   callOptionPrice: string;
@@ -73,6 +74,14 @@ export default function OptionCalculator() {
       <h1 className="text-4xl font-bold text-center text-indigo-700 mb-8">
         Option Pricing Calculator
       </h1>
+
+      { /* Live Stock Ticker Embedded */ }
+      <section className="mt-12">
+        <h2 className="text-2xl font-bold text-center text-indigo-700 mb-4">
+          Live Stock Ticker
+        </h2>
+        <StockTicker ticker="AAPL" />
+      </section>
 
       <div className="space-y-8">
         {/* Stock Price */}
