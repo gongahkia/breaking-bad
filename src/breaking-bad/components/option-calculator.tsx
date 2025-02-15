@@ -186,19 +186,6 @@ export default function OptionCalculator() {
             step="0.1"
             className="w-full h-12 px-4 mb-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-          {/* Optional slider from 0 to 100 */}
-          <input
-            type="range"
-            value={volatilityPercent}
-            onChange={(e) => setVolatilityPercent(Number(e.target.value))}
-            min="0"
-            max="100"
-            step="1"
-            className="w-full accent-indigo-600"
-          />
-          <div className="text-sm text-gray-500 text-right">
-            {volatilityPercent.toFixed(1)}%
-          </div>
         </div>
 
         {/* Calculate Button */}

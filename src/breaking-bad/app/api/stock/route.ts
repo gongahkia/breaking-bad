@@ -1,11 +1,12 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextResponse } from 'next/server';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { ticker } = req.query;
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const ticker = searchParams.get('ticker');
   const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: "API key not configured" });
+    return NextResponse.json({ error: "API key not configured" }, { status: 500 });
   }
 
   try {
@@ -15,11 +16,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const data = await response.json();
 
     if (data["Global Quote"]) {
-      res.status(200).json(data["Global Quote"]);
+      return NextResponse.json(data["Global Quote"], { status: 200 });
     } else {
-      res.status(404).json({ error: "Unable to fetch stock data" });
+      return NextResponse.json({ error: "Unable to fetch stock data" }, { status: 404 });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error fetching stock data" });
+    return NextResponse.json({ error: "Error fetching stock data" }, { status: 500 });
   }
 }
