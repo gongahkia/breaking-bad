@@ -1,3 +1,5 @@
+import React from 'react';
+import { Metadata } from 'next';
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -11,12 +13,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Breaking Bad",
   description: "Helping you with option pricing since 2024.",
 };
 
-export default function RootLayout({ children }) {
+interface RootLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
