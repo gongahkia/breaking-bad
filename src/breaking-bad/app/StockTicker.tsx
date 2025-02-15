@@ -1,4 +1,3 @@
-// components/StockTicker.tsx
 "use client";
 
 import useSWR from "swr";
