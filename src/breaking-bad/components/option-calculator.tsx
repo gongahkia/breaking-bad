@@ -21,6 +21,7 @@ export default function OptionCalculator() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [ticker, setTicker] = useState("AAPL");
 
   async function handleCalculate() {
     setIsCalculating(true);
@@ -80,7 +81,20 @@ export default function OptionCalculator() {
         <h2 className="text-2xl font-bold text-center text-indigo-700 mb-4">
           Live Stock Ticker
         </h2>
-        <StockTicker ticker="AAPL" />
+        <div className="flex justify-center items-center mb-4 space-x-2">
+          <label htmlFor="ticker-input" className="text-gray-700">
+            Enter Ticker:
+          </label>
+          <input
+            id="ticker-input"
+            type="text"
+            value={ticker}
+            onChange={(e) => setTicker(e.target.value.toUpperCase())}
+            placeholder="AAPL"
+            className="w-24 h-10 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+        <StockTicker ticker={ticker} />
       </section>
 
       <div className="space-y-8">
