@@ -16,7 +16,7 @@ ALPHA_VANTAGE_API_KEY=XXX
 2. Run the below.
 
 ```console
-$ cd breaking-bad
+$ cd src\breaking-bad
 $ npm install framer-motion @tailwindcss/forms
 $ npm install next@latest react@latest react-dom@latest simple-statistics
 $ npm install swr
