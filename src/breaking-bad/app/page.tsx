@@ -1,4 +1,4 @@
-import OptionCalculatorWrapper from './OptionCalculatorWrapper'
+import OptionCalculatorWrapper from './../components/OptionCalculatorWrapper'
 
 export default function Home() {
   return <OptionCalculatorWrapper />

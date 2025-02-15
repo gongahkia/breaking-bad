@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
 
-const OptionCalculator = dynamic(() => import('./option-calculator'), { ssr: false })
+const OptionCalculator = dynamic(() => import('../components/option-calculator'), { ssr: false })
 
 export default function OptionCalculatorWrapper() {
   return (

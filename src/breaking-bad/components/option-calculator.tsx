@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { calculateOption } from "./actions/calculate";
-import StockTicker from "../components/StockTicker";
+import { calculateOption } from "../app/actions/calculate";
+import StockTicker from "./StockTicker";
 
 interface CalculationResult {
   callOptionPrice: string;
