@@ -7,7 +7,8 @@ interface StockData {
   // Alpha Vantage's Global Quote returns keys like these:
   "01. symbol"?: string;
   "05. price"?: string;
-  // ...other fields if needed
+  "07. latest trading day"?: string;
+  // add other fields if needed
 }
 
 interface StockTickerProps {
@@ -17,22 +18,24 @@ interface StockTickerProps {
 // A simple fetcher function
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-// Simple ticker validation (adjust as needed)
+// Validate ticker symbols (assumes valid tickers are 1-5 uppercase letters)
 const isValidTicker = (ticker: string) => /^[A-Z]{1,5}$/.test(ticker);
 
 export default function StockTicker({ ticker }: StockTickerProps) {
+  // Only fetch if the ticker is valid
   const shouldFetch = isValidTicker(ticker);
 
+  // Using SWR without an automatic refresh; dedupingInterval caches repeated requests
   const { data, error } = useSWR<StockData>(
     shouldFetch ? `/api/stock?ticker=${ticker}` : null,
     fetcher,
-    { refreshInterval: shouldFetch ? 10000 : 0 }
+    { dedupingInterval: 60000 } // cache responses for 60 seconds
   );
 
   if (!shouldFetch) {
     return (
       <div className="text-gray-600">
-        Please enter a valid ticker symbol to load data.
+        Please enter a valid ticker symbol.
       </div>
     );
   }
@@ -51,7 +54,7 @@ export default function StockTicker({ ticker }: StockTickerProps) {
     );
   }
 
-  // Extract the price from the "05. price" key
+  // Extract the price and last updated info from the API response
   const priceValue = data["05. price"];
   if (!priceValue) {
     return (
@@ -62,6 +65,7 @@ export default function StockTicker({ ticker }: StockTickerProps) {
   }
 
   const price = parseFloat(priceValue);
+  const lastUpdated = data["07. latest trading day"];
 
   return (
     <motion.div
@@ -70,6 +74,9 @@ export default function StockTicker({ ticker }: StockTickerProps) {
     >
       <h3 className="text-lg font-bold mb-2">{ticker} Stock Price</h3>
       <p className="text-2xl text-indigo-600">${price.toFixed(2)}</p>
+      {lastUpdated && (
+        <p className="text-sm text-gray-500">Last updated: {lastUpdated}</p>
+      )}
     </motion.div>
   );
 }
