@@ -21,7 +21,10 @@ export default function OptionCalculator() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [ticker, setTicker] = useState("AAPL");
+
+  // States for the stock ticker input
+  const [tickerInput, setTickerInput] = useState("AAPL");
+  const [submittedTicker, setSubmittedTicker] = useState("");
 
   async function handleCalculate() {
     setIsCalculating(true);
@@ -76,11 +79,13 @@ export default function OptionCalculator() {
         Option Pricing Calculator
       </h1>
 
-      { /* Live Stock Ticker Embedded */ }
+      {/* Live Stock Ticker Section */}
       <section className="mt-12">
         <h2 className="text-2xl font-bold text-center text-indigo-700 mb-4">
           Live Stock Ticker
         </h2>
+
+        {/* Ticker Input & Submit Button */}
         <div className="flex justify-center items-center mb-4 space-x-2">
           <label htmlFor="ticker-input" className="text-gray-700">
             Enter Ticker:
@@ -88,22 +93,44 @@ export default function OptionCalculator() {
           <input
             id="ticker-input"
             type="text"
-            value={ticker}
-            onChange={(e) => setTicker(e.target.value.toUpperCase())}
+            value={tickerInput}
+            onChange={(e) => setTickerInput(e.target.value.toUpperCase())}
             placeholder="AAPL"
             className="w-24 h-10 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
+          <button
+            onClick={() => {
+              // Only update submittedTicker if the input is valid.
+              // You can add further validation here if needed.
+              setSubmittedTicker(tickerInput);
+            }}
+            className="h-10 px-4 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700"
+          >
+            Submit
+          </button>
         </div>
-        <StockTicker ticker={ticker} />
+
+        {/* Description for API Call */}
+        <p className="text-xs text-gray-500 text-center mb-4">
+          Note: Due to Alpha Vantage's 25 request/day limit, stock data is only fetched when you submit a ticker.
+        </p>
+
+        {/* Render StockTicker only if a ticker has been submitted */}
+        {submittedTicker ? (
+          <StockTicker ticker={submittedTicker} />
+        ) : (
+          <div className="text-gray-600 text-center">
+            Enter a ticker and click "Submit" to load stock data.
+          </div>
+        )}
       </section>
 
       <div className="space-y-8">
+        {/* The rest of your Option Calculator form... */}
+
         {/* Stock Price */}
         <div className="space-y-2">
-          <label
-            htmlFor="stock-price"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="stock-price" className="block text-sm font-medium text-gray-700">
             Initial Stock Price (S0)
           </label>
           <input
@@ -116,10 +143,7 @@ export default function OptionCalculator() {
 
         {/* Strike Price */}
         <div className="space-y-2">
-          <label
-            htmlFor="strike-price"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="strike-price" className="block text-sm font-medium text-gray-700">
             Strike Price (X)
           </label>
           <input
@@ -130,12 +154,9 @@ export default function OptionCalculator() {
           />
         </div>
 
-        {/* Interest Rate (0-100% Display) */}
+        {/* Interest Rate */}
         <div className="space-y-2">
-          <label
-            htmlFor="interest-rate"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="interest-rate" className="block text-sm font-medium text-gray-700">
             Risk-free Interest Rate (%)
           </label>
           <input
@@ -152,10 +173,7 @@ export default function OptionCalculator() {
 
         {/* Dividend Yield */}
         <div className="space-y-2">
-          <label
-            htmlFor="dividend-yield"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="dividend-yield" className="block text-sm font-medium text-gray-700">
             Dividend Yield (q)
           </label>
           <input
@@ -169,10 +187,7 @@ export default function OptionCalculator() {
 
         {/* Time to Expiration */}
         <div className="space-y-2">
-          <label
-            htmlFor="expiration-time"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="expiration-time" className="block text-sm font-medium text-gray-700">
             Time to Expiration (t in years)
           </label>
           <input
@@ -184,12 +199,9 @@ export default function OptionCalculator() {
           />
         </div>
 
-        {/* Volatility (0-100% Display) */}
+        {/* Volatility */}
         <div className="space-y-2">
-          <label
-            htmlFor="volatility"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="volatility" className="block text-sm font-medium text-gray-700">
             Expected Volatility (%)
           </label>
           <input
