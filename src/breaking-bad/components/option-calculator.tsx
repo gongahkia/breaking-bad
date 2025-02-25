@@ -22,19 +22,29 @@ export default function OptionCalculator() {
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // States for the stock ticker input
+  // Price mode: "auto" or "manual"
+  const [priceMode, setPriceMode] = useState<"auto" | "manual">("auto");
+
+  // For auto mode: ticker input and submitted ticker
   const [tickerInput, setTickerInput] = useState("AAPL");
   const [submittedTicker, setSubmittedTicker] = useState("");
+
+  // Price states: autoPrice will come from the StockTicker callback; manualPrice is user-entered.
+  const [autoPrice, setAutoPrice] = useState<number | null>(null);
+  const [manualPrice, setManualPrice] = useState("100");
 
   async function handleCalculate() {
     setIsCalculating(true);
     setError(null);
-
     try {
-      // Get other inputs (already in numeric form)
-      const stockPrice = Number.parseFloat(
-        (document.getElementById("stock-price") as HTMLInputElement).value
-      );
+      // Determine the stock price based on the selected mode
+      const stockPrice =
+        priceMode === "auto"
+          ? autoPrice !== null
+            ? autoPrice
+            : 0 
+          : Number(manualPrice);
+      
       const strikePrice = Number.parseFloat(
         (document.getElementById("strike-price") as HTMLInputElement).value
       );
@@ -79,68 +89,101 @@ export default function OptionCalculator() {
         Option Pricing Calculator
       </h1>
 
-      {/* Live Stock Ticker Section */}
-      <section className="mt-12">
-        <h2 className="text-2xl font-bold text-center text-indigo-700 mb-4">
-          Live Stock Ticker
-        </h2>
-
-        {/* Ticker Input & Submit Button */}
-        <div className="flex justify-center items-center mb-4 space-x-2">
-          <label htmlFor="ticker-input" className="text-gray-700">
-            Enter Ticker:
-          </label>
+      {/* Price Mode Toggle */}
+      <div className="flex justify-center items-center mb-4 space-x-4">
+        <label className="inline-flex items-center">
           <input
-            id="ticker-input"
-            type="text"
-            value={tickerInput}
-            onChange={(e) => setTickerInput(e.target.value.toUpperCase())}
-            placeholder="AAPL"
-            className="w-24 h-10 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            type="radio"
+            name="priceMode"
+            value="auto"
+            checked={priceMode === "auto"}
+            onChange={() => setPriceMode("auto")}
+            className="form-radio"
           />
-          <button
-            onClick={() => {
-              // Only update submittedTicker if the input is valid.
-              // You can add further validation here if needed.
-              setSubmittedTicker(tickerInput);
-            }}
-            className="h-10 px-4 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700"
-          >
-            Submit
-          </button>
-        </div>
+          <span className="ml-2">Current Stock Price</span>
+        </label>
+        <label className="inline-flex items-center">
+          <input
+            type="radio"
+            name="priceMode"
+            value="manual"
+            checked={priceMode === "manual"}
+            onChange={() => setPriceMode("manual")}
+            className="form-radio"
+          />
+          <span className="ml-2">Manual Stock Price</span>
+        </label>
+      </div>
 
-        {/* Description for API Call */}
-        <p className="text-xs text-gray-500 text-center mb-4">
-          Note: Due to Alpha Vantage's 25 request/day limit, stock data is only fetched when you submit a ticker.
-        </p>
-
-        {/* Render StockTicker only if a ticker has been submitted */}
-        {submittedTicker ? (
-          <StockTicker ticker={submittedTicker} />
-        ) : (
-          <div className="text-gray-600 text-center">
-            Enter a ticker and click "Submit" to load stock data.
+      {/* Section for auto vs. manual price selection */}
+      {priceMode === "auto" ? (
+        <>
+          <section className="mb-4">
+            <div className="flex justify-center items-center mb-2 space-x-2">
+              <label htmlFor="ticker-input" className="text-gray-700">
+                Enter Ticker:
+              </label>
+              <input
+                id="ticker-input"
+                type="text"
+                value={tickerInput}
+                onChange={(e) => setTickerInput(e.target.value.toUpperCase())}
+                placeholder="AAPL"
+                className="w-24 h-10 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <button
+                onClick={() => setSubmittedTicker(tickerInput)}
+                className="h-10 px-4 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700"
+              >
+                Submit
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 text-center">
+              Note: Due to Alpha Vantage's 25 request/day limit, stock data is only fetched when you submit a ticker.
+            </p>
+          </section>
+          {/* StockTicker fetches the price and calls onPriceUpdate */}
+          {submittedTicker ? (
+            <StockTicker
+              ticker={submittedTicker}
+              onPriceUpdate={(price: number) => setAutoPrice(price)}
+            />
+          ) : (
+            <div className="text-gray-600 text-center">
+              Enter a ticker and submit to load stock data.
+            </div>
+          )}
+          {/* Auto-populated Initial Stock Price (S0) */}
+          <div className="space-y-2 mb-4">
+            <label htmlFor="stock-price" className="block text-sm font-medium text-gray-700">
+              Initial Stock Price (S0)
+            </label>
+            <input
+              type="number"
+              id="stock-price"
+              value={autoPrice !== null ? autoPrice : ""}
+              readOnly
+              className="w-full h-12 px-4 border border-gray-300 rounded-lg shadow-sm bg-gray-100 cursor-not-allowed"
+            />
           </div>
-        )}
-      </section>
-
-      <div className="space-y-8">
-        {/* The rest of your Option Calculator form... */}
-
-        {/* Stock Price */}
-        <div className="space-y-2">
+        </>
+      ) : (
+        <div className="space-y-2 mb-4">
           <label htmlFor="stock-price" className="block text-sm font-medium text-gray-700">
             Initial Stock Price (S0)
           </label>
           <input
             type="number"
             id="stock-price"
-            defaultValue="100"
+            value={manualPrice}
+            onChange={(e) => setManualPrice(e.target.value)}
             className="w-full h-12 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
+      )}
 
+      {/* The rest of your Option Calculator inputs */}
+      <div className="space-y-8">
         {/* Strike Price */}
         <div className="space-y-2">
           <label htmlFor="strike-price" className="block text-sm font-medium text-gray-700">

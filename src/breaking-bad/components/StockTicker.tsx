@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import useSWR from "swr";
 import { motion } from "framer-motion";
 
@@ -13,6 +14,7 @@ interface StockData {
 
 interface StockTickerProps {
   ticker: string;
+  onPriceUpdate?: (price: number) => void;
 }
 
 // A simple fetcher function
@@ -26,7 +28,7 @@ export default function StockTicker({ ticker }: StockTickerProps) {
   const shouldFetch = isValidTicker(ticker);
 
   // Using SWR without an automatic refresh; dedupingInterval caches repeated requests
-  const { data, error } = useSWR<StockData>(
+  const { data, error, isLoading } = useSWR<StockData>(
     shouldFetch ? `/api/stock?ticker=${ticker}` : null,
     fetcher,
     { dedupingInterval: 60000 } // cache responses for 60 seconds
@@ -46,7 +48,7 @@ export default function StockTicker({ ticker }: StockTickerProps) {
       </div>
     );
   }
-  if (!data) {
+  if (isLoading) {
     return (
       <div className="text-gray-600">
         Loading {ticker} stock data...
@@ -54,7 +56,7 @@ export default function StockTicker({ ticker }: StockTickerProps) {
     );
   }
 
-  // Extract the price and last updated info from the API response
+  // Extract the price from the API response using Alpha Vantage's key
   const priceValue = data["05. price"];
   if (!priceValue) {
     return (
@@ -66,6 +68,13 @@ export default function StockTicker({ ticker }: StockTickerProps) {
 
   const price = parseFloat(priceValue);
   const lastUpdated = data["07. latest trading day"];
+
+  // Notify the parent component with the auto-fetched price when it changes
+  useEffect(() => {
+    if (onPriceUpdate) {
+      onPriceUpdate(price);
+    }
+  }, [price, onPriceUpdate]);
 
   return (
     <motion.div
