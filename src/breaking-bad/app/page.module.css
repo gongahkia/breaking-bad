@@ -1,29 +1,37 @@
 .page {
-  --gray-rgb: 0, 0, 0;
-  --gray-alpha-200: rgba(var(--gray-rgb), 0.08);
-  --gray-alpha-100: rgba(var(--gray-rgb), 0.05);
+  --gray-rgb: 229, 231, 235; /* Light gray color */
+  --gray-alpha-200: rgba(var(--gray-rgb), 0.8);
+  --gray-alpha-100: rgba(var(--gray-rgb), 0.4);
 
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
+  --button-primary-hover: #6B7280; /* Darker gray for button hover */
+  --button-secondary-hover: #F9FAFA; /* Lighter gray for button hover */
 
   display: grid;
-  grid-template-rows: 20px 1fr 20px;
+  grid-template-rows: 20px 1fr 20px; /* Adjust rows as needed */
   align-items: center;
   justify-items: center;
   min-height: 100svh;
   padding: 80px;
   gap: 64px;
   font-family: var(--font-geist-sans);
+  background-color: #E5E7EB; /* Base neumorphic background color */
+  box-shadow: 5px 5px 10px #D1D5DB, /* Darker shadow */
+             -5px -5px 10px #F9FAFA; /* Lighter shadow */
+  border-radius: 20px; /* Soften the corners */
 }
 
 @media (prefers-color-scheme: dark) {
   .page {
-    --gray-rgb: 255, 255, 255;
-    --gray-alpha-200: rgba(var(--gray-rgb), 0.145);
-    --gray-alpha-100: rgba(var(--gray-rgb), 0.06);
+    --gray-rgb: 55, 65, 81; /* Dark gray color */
+    --gray-alpha-200: rgba(var(--gray-rgb), 0.4);
+    --gray-alpha-100: rgba(var(--gray-rgb), 0.2);
 
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
+    --button-primary-hover: #9CA3AF; /* Lighter gray for button hover */
+    --button-secondary-hover: #4B5563; /* Darker gray for button hover */
+
+    background-color: #4B5563; /* Dark mode background */
+    box-shadow: 5px 5px 10px #374151,
+               -5px -5px 10px #6B7280;
   }
 }
 
@@ -67,7 +75,7 @@
   height: 48px;
   padding: 0 20px;
   border: none;
-  border: 1px solid transparent;
+  /*border: 1px solid transparent;*/ /* Remove border for neumorphism */
   transition:
     background 0.2s,
     color 0.2s,
@@ -79,6 +87,8 @@
   font-size: 16px;
   line-height: 20px;
   font-weight: 500;
+  box-shadow: 2px 2px 5px #D1D5DB, /* Add neumorphic shadow */
+             -2px -2px 5px #F9FAFA;
 }
 
 a.primary {
@@ -88,7 +98,7 @@ a.primary {
 }
 
 a.secondary {
-  border-color: var(--gray-alpha-200);
+  /*border-color: var(--gray-alpha-200);*/ /* Remove border for neumorphism */
   min-width: 180px;
 }
 

@@ -69,7 +69,7 @@ export default function OptionCalculator() {
             value="auto"
             checked={priceMode === "auto"}
             onChange={() => setPriceMode("auto")}
-            className="form-radio h-5 w-5 text-indigo-600"
+            className="form-radio h-5 w-5 text-indigo-600 shadow-inner"
           />
           <span className="ml-2 text-gray-700">Current Stock Price</span>
         </label>
@@ -79,7 +79,7 @@ export default function OptionCalculator() {
             value="manual"
             checked={priceMode === "manual"}
             onChange={() => setPriceMode("manual")}
-            className="form-radio h-5 w-5 text-indigo-600"
+            className="form-radio h-5 w-5 text-indigo-600 shadow-inner"
           />
           <span className="ml-2 text-gray-700">Manual Stock Price</span>
         </label>
@@ -95,11 +95,11 @@ export default function OptionCalculator() {
               placeholder="AAPL"
               value={tickerInput}
               onChange={(e) => setTickerInput(e.target.value.toUpperCase())}
-              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md shadow-inner"
             />
             <button
               onClick={() => setSubmittedTicker(tickerInput)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-inner"
             >
               Submit
             </button>
@@ -114,20 +114,20 @@ export default function OptionCalculator() {
             <p className="text-gray-500">Enter a ticker and submit to load stock data.</p>
           )}
           {autoPrice !== null && (
-             <div>
-             {/* Auto-populated Initial Stock Price (S0) */}
-             <label htmlFor="initial-price" className="block text-sm font-medium text-gray-700">
-             Initial Stock Price (S0)
-             </label>
-             <input
-             type="text"
-             id="initial-price"
-             className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-             value={autoPrice}
-             disabled={true}
-             />
-             </div>
-           )}
+            <div>
+              {/* Auto-populated Initial Stock Price (S0) */}
+              <label htmlFor="initial-price" className="block text-sm font-medium text-gray-700">
+                Initial Stock Price (S0)
+              </label>
+              <input
+                type="text"
+                id="initial-price"
+                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md shadow-inner"
+                value={autoPrice}
+                disabled={true}
+              />
+            </div>
+          )}
         </div>
       ) : (
         <div>
@@ -139,7 +139,7 @@ export default function OptionCalculator() {
             id="manual-price"
             value={manualPrice}
             onChange={(e) => setManualPrice(e.target.value)}
-            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md shadow-inner"
           />
         </div>
       )}
@@ -152,7 +152,7 @@ export default function OptionCalculator() {
         <input
           type="text"
           id="strike-price"
-          className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+          className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md shadow-inner"
         />
       </div>
 
@@ -166,7 +166,7 @@ export default function OptionCalculator() {
             id="interest-rate"
             value={interestRatePercent}
             onChange={(e) => setInterestRatePercent(Number(e.target.value))}
-            className="focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md pr-10"
+            className="focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md pr-10 shadow-inner"
           />
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500">
             %
@@ -181,7 +181,7 @@ export default function OptionCalculator() {
         <input
           type="text"
           id="dividend-yield"
-          className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+          className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md shadow-inner"
         />
       </div>
 
@@ -192,7 +192,7 @@ export default function OptionCalculator() {
         <input
           type="text"
           id="expiration-time"
-          className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+          className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md shadow-inner"
         />
       </div>
 
@@ -207,7 +207,7 @@ export default function OptionCalculator() {
             value={volatilityPercent}
             onChange={(e) => setVolatilityPercent(Number(e.target.value))}
             step="0.1"
-            className="focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md pr-10"
+            className="focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md pr-10 shadow-inner"
           />
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500">
             %
@@ -219,7 +219,7 @@ export default function OptionCalculator() {
         <button
           onClick={handleCalculate}
           disabled={isCalculating}
-          className="inline-flex items-center px-6 py-3 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+          className="inline-flex items-center px-6 py-3 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 shadow-inner"
         >
           {isCalculating ? "Calculating..." : "Calculate"}
         </button>
