@@ -1,9 +1,7 @@
-import OptionCalculatorWrapper from './../components/OptionCalculatorWrapper'
+"use client"
 
-export default function Home() {
-  return (
-    <div className="bg-gray-200 min-h-screen"> 
-      <OptionCalculatorWrapper />
-    </div>
-  );
+import OptionCalculatorWrapper from "./../components/OptionCalculatorWrapper"
+
+export default function Page() {
+  return <OptionCalculatorWrapper />
 }

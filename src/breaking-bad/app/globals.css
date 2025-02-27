@@ -1,48 +1,100 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --background: #E5E7EB; /* Light gray for neumorphism */
-  --foreground: #1E293B;
-  --primary: #3B82F6;
-  --primary-light: #60A5FA;
-  --secondary: #9CA3AF; /* Light gray-blue */
-  --accent: #F59E0B;
-  --success: #10B981;
-  --error: #EF4444;
-  --shadow-light: #F9FAFA; /* Lighter shadow color */
-  --shadow-dark: #D1D5DB; /* Darker shadow color */
+  /* Base colors */
+  --background: 243 244 246; /* gray-100 */
+  --foreground: 31 41 55; /* gray-800 */
+  
+  /* UI Colors */
+  --card: 255 255 255;
+  --card-foreground: 31 41 55;
+  
+  --popover: 255 255 255;
+  --popover-foreground: 31 41 55;
+  
+  --primary: 59 130 246; /* blue-500 */
+  --primary-foreground: 255 255 255;
+  
+  --secondary: 229 231 235; /* gray-200 */
+  --secondary-foreground: 31 41 55;
+  
+  --muted: 243 244 246; /* gray-100 */
+  --muted-foreground: 107 114 128; /* gray-500 */
+  
+  --accent: 243 244 246; /* gray-100 */
+  --accent-foreground: 31 41 55;
+  
+  --destructive: 239 68 68; /* red-500 */
+  --destructive-foreground: 255 255 255;
+  
+  --border: 229 231 235; /* gray-200 */
+  --input: 229 231 235; /* gray-200 */
+  --ring: 59 130 246; /* blue-500 */
+  
+  --radius: 0.75rem;
+  
+  /* Neumorphic specific */
+  --shadow-light: 255 255 255;
+  --shadow-dark: 209 213 219; /* gray-300 */
+  --shadow-color-light: rgba(255, 255, 255, 0.8);
+  --shadow-color-dark: rgba(0, 0, 0, 0.1);
+  
+  /* Chart colors */
+  --chart-1: 59 130 246;
+  --chart-2: 16 185 129;
+  --chart-3: 245 158 11;
+  --chart-4: 139 92 246;
+  --chart-5: 239 68 68;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #4B5563; /* Dark gray for dark mode neumorphism */
-    --foreground: #E5E7EB;
-    --primary: #60A5FA;
-    --primary-light: #93C5FD;
-    --secondary: #6B7280; /* Darker gray-blue */
-    --accent: #F59E0B;
-    --success: #10B981;
-    --error: #EF4444;
-    --shadow-light: #6B7280; /* Lighter shadow color for dark mode */
-    --shadow-dark: #374151; /* Darker shadow color for dark mode */
-  }
+.dark {
+  --background: 31 41 55; /* gray-800 */
+  --foreground: 243 244 246; /* gray-100 */
+  
+  --card: 55 65 81; /* gray-700 */
+  --card-foreground: 243 244 246;
+  
+  --popover: 55 65 81;
+  --popover-foreground: 243 244 246;
+  
+  --primary: 96 165 250; /* blue-400 */
+  --primary-foreground: 255 255 255;
+  
+  --secondary: 75 85 99; /* gray-600 */
+  --secondary-foreground: 243 244 246;
+  
+  --muted: 55 65 81; /* gray-700 */
+  --muted-foreground: 156 163 175; /* gray-400 */
+  
+  --accent: 75 85 99; /* gray-600 */
+  --accent-foreground: 243 244 246;
+  
+  --destructive: 248 113 113; /* red-400 */
+  --destructive-foreground: 255 255 255;
+  
+  --border: 75 85 99; /* gray-600 */
+  --input: 75 85 99; /* gray-600 */
+  --ring: 96 165 250; /* blue-400 */
+  
+  /* Neumorphic specific for dark mode */
+  --shadow-light: 75 85 99; /* gray-600 */
+  --shadow-dark: 17 24 39; /* gray-900 */
+  --shadow-color-light: rgba(75, 85, 99, 0.5);
+  --shadow-color-dark: rgba(0, 0, 0, 0.5);
 }
 
 html,
 body {
-  max-width: 100vw; /* Changed from 200vw to 100vw */
+  max-width: 100vw;
   overflow-x: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
   margin: 0;
   padding: 0;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -56,19 +108,18 @@ body {
 }
 
 a {
-  color: var(--primary);
+  color: hsl(var(--primary));
   text-decoration: none;
-  transition: color 0.3s ease, box-shadow 0.3s ease; /* Added shadow transition */
+  transition: color 0.3s ease, transform 0.2s ease;
 }
 
 a:hover {
-  color: var(--primary-light);
-  text-decoration: none; /* Removed underline */
-  box-shadow: 0 2px 5px var(--shadow-dark); /* Added shadow */
+  color: hsl(var(--primary) / 0.8);
+  transform: translateY(-1px);
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color: var(--foreground);
+  color: hsl(var(--foreground));
   font-weight: 600;
   line-height: 1.2;
   margin-bottom: 0.5em;
@@ -78,45 +129,102 @@ p {
   margin-bottom: 1em;
 }
 
+/* Neumorphic form elements */
 input, select, textarea {
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
-  padding: 0.5em 1em;
-  border: none; /* Removed border */
-  border-radius: 0.5rem; /* Slightly larger border radius */
-  background-color: var(--background);
-  color: var(--foreground);
-  transition: box-shadow 0.3s ease; /* Changed transition */
-  box-shadow: inset 2px 2px 5px var(--shadow-dark), /* Neumorphic shadow */
-              inset -2px -2px 5px var(--shadow-light);
+  padding: 0.75em 1em;
+  border: none;
+  border-radius: var(--radius);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  transition: all 0.3s ease;
+  box-shadow: inset 2px 2px 5px var(--shadow-color-dark),
+              inset -2px -2px 5px var(--shadow-color-light);
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border: none; /* Removed border on focus */
-  box-shadow: 2px 2px 5px var(--shadow-dark), /* Neumorphic shadow */
-              -2px -2px 5px var(--shadow-light);
+  box-shadow: inset 1px 1px 3px var(--shadow-color-dark),
+              inset -1px -1px 3px var(--shadow-color-light),
+              0 0 0 2px hsl(var(--ring) / 0.3);
 }
 
+/* Neumorphic buttons */
 button {
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
   font-weight: 500;
-  padding: 0.5em 1em;
-  background-color: var(--primary);
-  color: white;
+  padding: 0.75em 1.5em;
+  background: linear-gradient(145deg, hsl(var(--primary)), hsl(var(--primary) / 0.9));
+  color: hsl(var(--primary-foreground));
   border: none;
-  border-radius: 0.5rem; /* Slightly larger border radius */
+  border-radius: var(--radius);
   cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Added shadow transition */
-  box-shadow: 2px 2px 5px var(--shadow-dark), /* Neumorphic shadow */
-              -2px -2px 5px var(--shadow-light);
+  transition: all 0.3s ease;
+  box-shadow: 3px 3px 6px var(--shadow-color-dark),
+              -3px -3px 6px var(--shadow-color-light);
 }
 
 button:hover {
-  background-color: var(--primary-light);
-  box-shadow: inset 2px 2px 5px var(--shadow-dark), /* Inset shadow on hover */
-              inset -2px -2px 5px var(--shadow-light);
+  background: linear-gradient(145deg, hsl(var(--primary) / 0.9), hsl(var(--primary)));
+  transform: translateY(-1px);
+  box-shadow: 4px 4px 8px var(--shadow-color-dark),
+              -4px -4px 8px var(--shadow-color-light);
+}
+
+button:active {
+  transform: translateY(1px);
+  box-shadow: inset 2px 2px 5px var(--shadow-color-dark),
+              inset -2px -2px 5px var(--shadow-color-light);
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  box-shadow: 1px 1px 3px var(--shadow-color-dark),
+              -1px -1px 3px var(--shadow-color-light);
+}
+
+/* Neumorphic card */
+.neumorphic-card {
+  background-color: hsl(var(--background));
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: 5px 5px 10px var(--shadow-color-dark),
+              -5px -5px 10px var(--shadow-color-light);
+}
+
+.neumorphic-inset {
+  background-color: hsl(var(--background));
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: inset 3px 3px 6px var(--shadow-color-dark),
+              inset -3px -3px 6px var(--shadow-color-light);
+}
+
+/* Loading animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 
 @media (prefers-color-scheme: dark) {
