@@ -7,30 +7,27 @@ const OptionCalculator = dynamic(() => import('../components/option-calculator')
 
 export default function OptionCalculatorWrapper() {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-8 flex flex-col items-center justify-center"
-    >
-      <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
-        className="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden"
-      >
-        <div className="bg-indigo-600 p-6 sm:p-10">
-          <h1 className="text-3xl sm:text-4xl font-bold text-center text-white">
-            Breaking Bad
+    <div className="font-sans antialiased bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+      <header className="bg-white shadow-md py-6">
+        <div className="container mx-auto px-4">
+          <h1 className="text-2xl font-semibold text-center">
+            Option Calculator
           </h1>
-          <p className="mt-2 text-center text-indigo-200">
-            Calculate option prices for you since 2024.
+          <p className="text-gray-600 text-center mt-1">
+            Calculate option prices quickly and accurately.
           </p>
         </div>
-        <div className="p-6 sm:p-10">
+      </header>
+      <main className="container mx-auto px-4 py-8 flex-grow">
+        <div className="bg-white rounded-lg shadow-md p-6">
           <OptionCalculator />
         </div>
-      </motion.div>
-    </motion.div>
+      </main>
+      <footer className="bg-gray-100 py-4">
+        <div className="container mx-auto px-4 text-center text-sm text-gray-500">
+          Made with love by <a href="https://github.com/gongahkia" className="text-blue-500 hover:underline">Gabriel Ong</a> and <a href="https://github.com/richardleii58" className="text-blue-500 hover:underline">Richard Lim</a>
+        </div>
+      </footer>
+    </div>
   )
 }

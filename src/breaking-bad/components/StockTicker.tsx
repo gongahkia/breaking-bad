@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { motion } from "framer-motion";
 
 interface StockData {
-  // Alpha Vantage's Global Quote returns keys like these:
   "01. symbol"?: string;
   "05. price"?: string;
   "07. latest trading day"?: string;
-  // add other fields if needed
 }
 
 interface StockTickerProps {
@@ -17,75 +15,82 @@ interface StockTickerProps {
   onPriceUpdate?: (price: number) => void;
 }
 
-// A simple fetcher function
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-// Validate ticker symbols (assumes valid tickers are 1-5 uppercase letters)
 const isValidTicker = (ticker: string) => /^[A-Z]{1,5}$/.test(ticker);
 
-export default function StockTicker({ ticker }: StockTickerProps) {
-  // Only fetch if the ticker is valid
+export default function StockTicker({ ticker, onPriceUpdate }: StockTickerProps) {
   const shouldFetch = isValidTicker(ticker);
-
-  // Using SWR without an automatic refresh; dedupingInterval caches repeated requests
-  const { data, error, isLoading } = useSWR<StockData>(
+  const { data, error, isLoading } = useSWR(
     shouldFetch ? `/api/stock?ticker=${ticker}` : null,
     fetcher,
-    { dedupingInterval: 60000 } // cache responses for 60 seconds
+    { dedupingInterval: 60000 }
   );
 
-  if (!shouldFetch) {
-    return (
-      <div className="text-gray-600">
-        Please enter a valid ticker symbol.
-      </div>
-    );
-  }
-  if (error) {
-    return (
-      <div className="text-red-500">
-        Error fetching data for {ticker}.
-      </div>
-    );
-  }
-  if (isLoading) {
-    return (
-      <div className="text-gray-600">
-        Loading {ticker} stock data...
-      </div>
-    );
-  }
+  // State for loading bar progress
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
-  // Extract the price from the API response using Alpha Vantage's key
-  const priceValue = data["05. price"];
-  if (!priceValue) {
-    return (
-      <div className="text-red-500">
-        Price data is unavailable.
-      </div>
-    );
-  }
-
-  const price = parseFloat(priceValue);
-  const lastUpdated = data["07. latest trading day"];
-
-  // Notify the parent component with the auto-fetched price when it changes
+  // Simulate loading progress
   useEffect(() => {
-    if (onPriceUpdate) {
-      onPriceUpdate(price);
+    if (isLoading) {
+      const interval = setInterval(() => {
+        setLoadingProgress((prevProgress) => {
+          const newProgress = prevProgress + 10;
+          return newProgress > 90 ? 90 : newProgress; // Cap at 90%
+        });
+      }, 100);
+
+      return () => clearInterval(interval);
+    } else {
+      setLoadingProgress(100); // Set to 100% when loading is done
     }
-  }, [price, onPriceUpdate]);
+  }, [isLoading]);
+
+  useEffect(() => {
+    if (!isLoading && data && data["05. price"]) {
+      setLoadingProgress(100); // Ensure it's 100% when data is loaded
+    }
+  }, [data, isLoading]);
+
+  if (!shouldFetch) {
+    return <div className="text-red-500">Please enter a valid ticker symbol.</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">Error fetching data for {ticker}.</div>;
+  }
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      className="p-4 bg-white rounded-lg shadow border border-gray-200"
-    >
-      <h3 className="text-lg font-bold mb-2">{ticker} Stock Price</h3>
-      <p className="text-2xl text-indigo-600">${price.toFixed(2)}</p>
-      {lastUpdated && (
-        <p className="text-sm text-gray-500">Last updated: {lastUpdated}</p>
+    <div>
+      {/* Loading Bar */}
+      {isLoading && (
+        <div className="relative pt-1">
+          <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+            <div
+              style={{ width: `${loadingProgress}%` }}
+              className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500 transition-all duration-500"
+            />
+          </div>
+        </div>
       )}
-    </motion.div>
+
+      {data && data["05. price"] ? (
+        <div className="mt-2">
+          <div className="text-lg font-semibold">{ticker} Stock Price</div>
+          <div className="text-2xl">${parseFloat(data["05. price"]).toFixed(2)}</div>
+          {data["07. latest trading day"] && (
+            <div className="text-sm text-gray-500">Last updated: {data["07. latest trading day"]}</div>
+          )}
+          {/* Notify the parent component with the auto-fetched price when it changes */}
+          {useEffect(() => {
+          if (onPriceUpdate) {
+            onPriceUpdate(parseFloat(data["05. price"]));
+            }
+            }, [data, onPriceUpdate])}
+        </div>
+      ) : (
+        isLoading ? null : <div className="text-gray-500">Price data is unavailable.</div>
+      )}
+    </div>
   );
 }
