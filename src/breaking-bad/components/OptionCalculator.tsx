@@ -146,6 +146,8 @@ export default function OptionCalculator() {
         </form>
       )}
 
+      {inputMethod === "ticker" && <p>Note: Due to Alpha Vantage's 25 request/day limit, stock data is only fetched when you submit a ticker.</p>}
+
       {inputMethod === "ticker" && !shouldFetch && <p>Please enter a valid ticker symbol.</p>}
       {inputMethod === "ticker" && error && <p>Error fetching data for {submittedTicker}.</p>}
 
@@ -204,8 +206,6 @@ export default function OptionCalculator() {
         </div>
       )}
 
-      Stock Ticker: 
-      {inputMethod === "ticker" && <p>Note: Due to Alpha Vantage's 25 request/day limit, stock data is only fetched when you submit a ticker.</p>}
       <br></br>
     </div>
   )
