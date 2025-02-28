@@ -149,16 +149,23 @@ export default function EnhancedOptionCalculator() {
 
       <div>
         <h2>Option Calculator</h2>
-        <input name="stockPrice" type="number" value={inputs.stockPrice} onChange={handleInputChange} placeholder="Stock Price" />
-        <input name="strikePrice" type="number" value={inputs.strikePrice} onChange={handleInputChange} placeholder="Strike Price" />
-        <input name="timeToExpiration" type="number" value={inputs.timeToExpiration} onChange={handleInputChange} placeholder="Time to Expiration (years)" />
-        <input name="interestRate" type="number" value={inputs.interestRate} onChange={handleInputChange} placeholder="Interest Rate (decimal)" />
-        <input name="volatility" type="number" value={inputs.volatility} onChange={handleInputChange} placeholder="Volatility (decimal)" />
-        <select name="optionType" value={inputs.optionType} onChange={handleOptionTypeChange}>
+        Stock Price: <input name="stockPrice" type="number" value={inputs.stockPrice} onChange={handleInputChange} placeholder="Stock Price" />
+        <br></br>
+        Strike Price: <input name="strikePrice" type="number" value={inputs.strikePrice} onChange={handleInputChange} placeholder="Strike Price" />
+        <br></br>
+        Time to expiration: <input name="timeToExpiration" type="number" value={inputs.timeToExpiration} onChange={handleInputChange} placeholder="Time to Expiration (years)" />
+        <br></br>
+        Interest rate: <input name="interestRate" type="number" value={inputs.interestRate} onChange={handleInputChange} placeholder="Interest Rate (decimal)" />
+        <br></br>
+        Volatility: <input name="volatility" type="number" value={inputs.volatility} onChange={handleInputChange} placeholder="Volatility (decimal)" />
+        <br></br>
+        Option type: <select name="optionType" value={inputs.optionType} onChange={handleOptionTypeChange}>
           <option value="call">Call</option>
           <option value="put">Put</option>
         </select>
-        <button onClick={calculateOption}>Calculate Option</button>
+        <br></br>
+        <button onClick={calculateOption}>Calculate</button>
+        <br></br>
       </div>
 
       {result && (

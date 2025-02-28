@@ -1,126 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #E5E7EB; /* Light gray for neumorphism */
-  --foreground: #1E293B;
-  --primary: #3B82F6;
-  --primary-light: #60A5FA;
-  --secondary: #9CA3AF; /* Light gray-blue */
-  --accent: #F59E0B;
-  --success: #10B981;
-  --error: #EF4444;
-  --shadow-light: #F9FAFA; /* Lighter shadow color */
-  --shadow-dark: #D1D5DB; /* Darker shadow color */
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #4B5563; /* Dark gray for dark mode neumorphism */
-    --foreground: #E5E7EB;
-    --primary: #60A5FA;
-    --primary-light: #93C5FD;
-    --secondary: #6B7280; /* Darker gray-blue */
-    --accent: #F59E0B;
-    --success: #10B981;
-    --error: #EF4444;
-    --shadow-light: #6B7280; /* Lighter shadow color for dark mode */
-    --shadow-dark: #374151; /* Darker shadow color for dark mode */
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(var(--background-end-rgb))
+  )
+  rgb(var(--background-start-rgb));
+}
+
+@layer components {
+  .input-field {
+    @apply w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500;
   }
-}
-
-html,
-body {
-  max-width: 100vw; /* Changed from 200vw to 100vw */
-  overflow-x: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: 'Inter', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  line-height: 1.5;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: var(--primary);
-  text-decoration: none;
-  transition: color 0.3s ease, box-shadow 0.3s ease; /* Added shadow transition */
-}
-
-a:hover {
-  color: var(--primary-light);
-  text-decoration: none; /* Removed underline */
-  box-shadow: 0 2px 5px var(--shadow-dark); /* Added shadow */
-}
-
-h1, h2, h3, h4, h5, h6 {
-  color: var(--foreground);
-  font-weight: 600;
-  line-height: 1.2;
-  margin-bottom: 0.5em;
-}
-
-p {
-  margin-bottom: 1em;
-}
-
-input, select, textarea {
-  font-family: 'Inter', sans-serif;
-  font-size: 1rem;
-  padding: 0.5em 1em;
-  border: none; /* Removed border */
-  border-radius: 0.5rem; /* Slightly larger border radius */
-  background-color: var(--background);
-  color: var(--foreground);
-  transition: box-shadow 0.3s ease; /* Changed transition */
-  box-shadow: inset 2px 2px 5px var(--shadow-dark), /* Neumorphic shadow */
-              inset -2px -2px 5px var(--shadow-light);
-}
-
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border: none; /* Removed border on focus */
-  box-shadow: 2px 2px 5px var(--shadow-dark), /* Neumorphic shadow */
-              -2px -2px 5px var(--shadow-light);
-}
-
-button {
-  font-family: 'Inter', sans-serif;
-  font-size: 1rem;
-  font-weight: 500;
-  padding: 0.5em 1em;
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 0.5rem; /* Slightly larger border radius */
-  cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Added shadow transition */
-  box-shadow: 2px 2px 5px var(--shadow-dark), /* Neumorphic shadow */
-              -2px -2px 5px var(--shadow-light);
-}
-
-button:hover {
-  background-color: var(--primary-light);
-  box-shadow: inset 2px 2px 5px var(--shadow-dark), /* Inset shadow on hover */
-              inset -2px -2px 5px var(--shadow-light);
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+  
+  .btn {
+    @apply px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors;
   }
 }
