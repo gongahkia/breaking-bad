@@ -115,12 +115,14 @@ export default function EnhancedOptionCalculator() {
   return (
     <div>
       <form onSubmit={handleSubmit}>
+        Stock Ticker:
         <input
           type="text"
           value={ticker}
           onChange={(e) => setTicker(e.target.value.toUpperCase())}
           placeholder="Enter stock ticker"
         />
+        <br></br>
         <button type="submit">Submit</button>
       </form>
 
@@ -147,8 +149,9 @@ export default function EnhancedOptionCalculator() {
         </div>
       )}
 
+      <p>Note: Due to Alpha Vantage's 25 request/day limit, stock data is only fetched when you submit a ticker.</p>
+
       <div>
-        <h2>Option Calculator</h2>
         Stock Price: <input name="stockPrice" type="number" value={inputs.stockPrice} onChange={handleInputChange} placeholder="Stock Price" />
         <br></br>
         Strike Price: <input name="strikePrice" type="number" value={inputs.strikePrice} onChange={handleInputChange} placeholder="Strike Price" />
@@ -166,6 +169,7 @@ export default function EnhancedOptionCalculator() {
         <br></br>
         <button onClick={calculateOption}>Calculate</button>
         <br></br>
+        
       </div>
 
       {result && (
@@ -176,7 +180,6 @@ export default function EnhancedOptionCalculator() {
         </div>
       )}
 
-      <p>Note: Due to Alpha Vantage's 25 request/day limit, stock data is only fetched when you submit a ticker.</p>
     </div>
   )
 }
