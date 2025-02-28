@@ -1,10 +1,9 @@
-import OptionCalculator from '../components/OptionCalculator'
+import OptionCalculatorWrapper from './../components/OptionCalculatorWrapper'
 
 export default function Home() {
   return (
-    <main>
-      <h1>Breaking Bad Option Calculator</h1>
-      <OptionCalculator />
-    </main>
-  )
+    <div className="bg-gray-200 min-h-screen"> 
+      <OptionCalculatorWrapper />
+    </div>
+  );
 }

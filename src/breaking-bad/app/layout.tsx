@@ -1,18 +1,32 @@
-import './globals.css';
-import { ColorSchemeScript, MantineProvider } from '@mantine/core';
+import React from 'react';
+import { Metadata } from 'next';
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
 
-export default function RootLayout({
-  children,
-}: {
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Breaking Bad",
+  description: "Helping you with option pricing since 2024.",
+};
+
+interface RootLayoutProps {
   children: React.ReactNode;
-}) {
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <head>
-        <ColorSchemeScript />
-      </head>
-      <body>
-        <MantineProvider>{children}</MantineProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} bg-gray-200`}> {/* Apply background here */}
+        {children}
       </body>
     </html>
   );
