@@ -22,11 +22,11 @@ interface OptionInputs {
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 const isValidTicker = (ticker: string) => /^[A-Z]{1,5}$/.test(ticker)
 
-export default function EnhancedOptionCalculator() {
+export default function OptionCalculator() {
+  const [inputMethod, setInputMethod] = useState<"manual" | "ticker">("manual")
   const [ticker, setTicker] = useState("")
   const [submittedTicker, setSubmittedTicker] = useState("")
   const [loadingProgress, setLoadingProgress] = useState(0)
-  const [autoPrice, setAutoPrice] = useState<number | null>(null)
   const [result, setResult] = useState<any>(null)
   const [inputs, setInputs] = useState<OptionInputs>({
     stockPrice: 0,
@@ -39,7 +39,7 @@ export default function EnhancedOptionCalculator() {
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  const shouldFetch = isValidTicker(submittedTicker)
+  const shouldFetch = inputMethod === "ticker" && isValidTicker(submittedTicker)
   const { data, error, isLoading } = useSWR(shouldFetch ? `/api/stock?ticker=${submittedTicker}` : null, fetcher, {
     dedupingInterval: 60000,
   })
@@ -67,7 +67,6 @@ export default function EnhancedOptionCalculator() {
     if (!isLoading && data && data["05. price"]) {
       setLoadingProgress(100)
       const price = Number.parseFloat(data["05. price"])
-      setAutoPrice(price)
       setInputs(prev => ({ ...prev, stockPrice: price }))
     }
   }, [data, isLoading])
@@ -114,22 +113,43 @@ export default function EnhancedOptionCalculator() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit}>
-        Stock Ticker:
-        <input
-          type="text"
-          value={ticker}
-          onChange={(e) => setTicker(e.target.value.toUpperCase())}
-          placeholder="Enter stock ticker"
-        />
-        <br></br>
-        <button type="submit">Submit</button>
-      </form>
+      <div>
+        <label>
+          <input
+            type="radio"
+            value="manual"
+            checked={inputMethod === "manual"}
+            onChange={() => setInputMethod("manual")}
+          />
+          Manual Input
+        </label>
+        <label>
+          <input
+            type="radio"
+            value="ticker"
+            checked={inputMethod === "ticker"}
+            onChange={() => setInputMethod("ticker")}
+          />
+          Submit Stock Ticker
+        </label>
+      </div>
 
-      {!shouldFetch && <p>Please enter a valid ticker symbol.</p>}
-      {error && <p>Error fetching data for {submittedTicker}.</p>}
+      {inputMethod === "ticker" && (
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={ticker}
+            onChange={(e) => setTicker(e.target.value.toUpperCase())}
+            placeholder="Enter stock ticker"
+          />
+          <button type="submit">Submit</button>
+        </form>
+      )}
 
-      {(isLoading || loadingProgress < 100) && (
+      {inputMethod === "ticker" && !shouldFetch && <p>Please enter a valid ticker symbol.</p>}
+      {inputMethod === "ticker" && error && <p>Error fetching data for {submittedTicker}.</p>}
+
+      {inputMethod === "ticker" && (isLoading || loadingProgress < 100) && (
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${loadingProgress}%` }}
@@ -139,7 +159,7 @@ export default function EnhancedOptionCalculator() {
         </motion.div>
       )}
 
-      {data && data["05. price"] && (
+      {inputMethod === "ticker" && data && data["05. price"] && (
         <div>
           <h2>{submittedTicker} Stock Price</h2>
           <p>${Number.parseFloat(data["05. price"]).toFixed(2)}</p>
@@ -149,27 +169,20 @@ export default function EnhancedOptionCalculator() {
         </div>
       )}
 
-      <p>Note: Due to Alpha Vantage's 25 request/day limit, stock data is only fetched when you submit a ticker.</p>
-
       <div>
-        Stock Price: <input name="stockPrice" type="number" value={inputs.stockPrice} onChange={handleInputChange} placeholder="Stock Price" />
-        <br></br>
-        Strike Price: <input name="strikePrice" type="number" value={inputs.strikePrice} onChange={handleInputChange} placeholder="Strike Price" />
-        <br></br>
-        Time to expiration: <input name="timeToExpiration" type="number" value={inputs.timeToExpiration} onChange={handleInputChange} placeholder="Time to Expiration (years)" />
-        <br></br>
-        Interest rate: <input name="interestRate" type="number" value={inputs.interestRate} onChange={handleInputChange} placeholder="Interest Rate (decimal)" />
-        <br></br>
-        Volatility: <input name="volatility" type="number" value={inputs.volatility} onChange={handleInputChange} placeholder="Volatility (decimal)" />
-        <br></br>
-        Option type: <select name="optionType" value={inputs.optionType} onChange={handleOptionTypeChange}>
+        <h2>Option Calculator</h2>
+        {inputMethod === "manual" && (
+          <input name="stockPrice" type="number" value={inputs.stockPrice} onChange={handleInputChange} placeholder="Stock Price" />
+        )}
+        <input name="strikePrice" type="number" value={inputs.strikePrice} onChange={handleInputChange} placeholder="Strike Price" />
+        <input name="timeToExpiration" type="number" value={inputs.timeToExpiration} onChange={handleInputChange} placeholder="Time to Expiration (years)" />
+        <input name="interestRate" type="number" value={inputs.interestRate} onChange={handleInputChange} placeholder="Interest Rate (decimal)" />
+        <input name="volatility" type="number" value={inputs.volatility} onChange={handleInputChange} placeholder="Volatility (decimal)" />
+        <select name="optionType" value={inputs.optionType} onChange={handleOptionTypeChange}>
           <option value="call">Call</option>
           <option value="put">Put</option>
         </select>
-        <br></br>
-        <button onClick={calculateOption}>Calculate</button>
-        <br></br>
-        
+        <button onClick={calculateOption}>Calculate Option</button>
       </div>
 
       {result && (
@@ -180,6 +193,7 @@ export default function EnhancedOptionCalculator() {
         </div>
       )}
 
+      {inputMethod === "ticker" && <p>Note: Due to Alpha Vantage's 25 request/day limit, stock data is only fetched when you submit a ticker.</p>}
     </div>
   )
 }
