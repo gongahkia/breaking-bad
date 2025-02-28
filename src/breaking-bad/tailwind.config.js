@@ -8,13 +8,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'primary': '#3B82F6',
-        'secondary': '#10B981',
-        'accent': '#F59E0B',
+        'primary': 'var(--primary-color)',
+        'secondary': 'var(--secondary-color)',
+        'accent': 'var(--accent-color)',
+        'background': 'var(--background-color)',
+        'text': 'var(--text-color)',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        'sans': ['Poppins', 'sans-serif'],
       },
+      animation: {
+        'bounce-slow': 'bounce 3s infinite',
+      }
     },
   },
   plugins: [],
