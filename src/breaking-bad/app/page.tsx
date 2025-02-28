@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <main>
       <h1>Option Calculator</h1>
-      <EnhancedOptionCalculator />
+      <OptionCalculator />
     </main>
   )
 }

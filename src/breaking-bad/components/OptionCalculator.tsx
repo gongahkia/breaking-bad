@@ -3,12 +3,20 @@
 import { useState, useEffect, useRef } from "react"
 import useSWR from "swr"
 import { motion } from "framer-motion"
-import { BlackScholes } from 'your-black-scholes-library' // Import your Black-Scholes calculation library
 
 interface StockData {
   "01. symbol"?: string
   "05. price"?: string
   "07. latest trading day"?: string
+}
+
+interface OptionInputs {
+  stockPrice: number
+  strikePrice: number
+  timeToExpiration: number
+  interestRate: number
+  volatility: number
+  optionType: "call" | "put"
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
@@ -20,8 +28,14 @@ export default function EnhancedOptionCalculator() {
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [autoPrice, setAutoPrice] = useState<number | null>(null)
   const [result, setResult] = useState<any>(null)
-  
-  // Add other state variables for option calculation inputs
+  const [inputs, setInputs] = useState<OptionInputs>({
+    stockPrice: 0,
+    strikePrice: 0,
+    timeToExpiration: 0,
+    interestRate: 0,
+    volatility: 0,
+    optionType: "call"
+  })
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -52,7 +66,9 @@ export default function EnhancedOptionCalculator() {
   useEffect(() => {
     if (!isLoading && data && data["05. price"]) {
       setLoadingProgress(100)
-      setAutoPrice(Number.parseFloat(data["05. price"]))
+      const price = Number.parseFloat(data["05. price"])
+      setAutoPrice(price)
+      setInputs(prev => ({ ...prev, stockPrice: price }))
     }
   }, [data, isLoading])
 
@@ -61,12 +77,37 @@ export default function EnhancedOptionCalculator() {
     setSubmittedTicker(ticker)
   }
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setInputs(prev => ({ ...prev, [name]: parseFloat(value) }))
+  }
+
+  const handleOptionTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setInputs(prev => ({ ...prev, optionType: e.target.value as "call" | "put" }))
+  }
+
   const calculateOption = () => {
-    // Implement your option calculation logic here using BlackScholes
-    // Update the result state with the calculation output
-    const calculationResult = BlackScholes(/* your parameters */)
+    const { stockPrice, strikePrice, timeToExpiration, interestRate, volatility, optionType } = inputs
+    
+    const d1 = (Math.log(stockPrice / strikePrice) + (interestRate + volatility ** 2 / 2) * timeToExpiration) / (volatility * Math.sqrt(timeToExpiration))
+    const d2 = d1 - volatility * Math.sqrt(timeToExpiration)
+    
+    const normalCDF = (x: number) => {
+      const t = 1 / (1 + 0.2316419 * Math.abs(x))
+      const d = 0.3989423 * Math.exp(-x * x / 2)
+      const probability = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))))
+      return x > 0 ? 1 - probability : probability
+    }
+
+    let optionPrice: number
+    if (optionType === "call") {
+      optionPrice = stockPrice * normalCDF(d1) - strikePrice * Math.exp(-interestRate * timeToExpiration) * normalCDF(d2)
+    } else {
+      optionPrice = strikePrice * Math.exp(-interestRate * timeToExpiration) * normalCDF(-d2) - stockPrice * normalCDF(-d1)
+    }
+
     setResult({
-      ...calculationResult,
+      optionPrice,
       timestamp: new Date().getTime()
     })
   }
@@ -106,13 +147,24 @@ export default function EnhancedOptionCalculator() {
         </div>
       )}
 
-      {/* Add your option calculation inputs here */}
-      <button onClick={calculateOption}>Calculate Option</button>
+      <div>
+        <h2>Option Calculator</h2>
+        <input name="stockPrice" type="number" value={inputs.stockPrice} onChange={handleInputChange} placeholder="Stock Price" />
+        <input name="strikePrice" type="number" value={inputs.strikePrice} onChange={handleInputChange} placeholder="Strike Price" />
+        <input name="timeToExpiration" type="number" value={inputs.timeToExpiration} onChange={handleInputChange} placeholder="Time to Expiration (years)" />
+        <input name="interestRate" type="number" value={inputs.interestRate} onChange={handleInputChange} placeholder="Interest Rate (decimal)" />
+        <input name="volatility" type="number" value={inputs.volatility} onChange={handleInputChange} placeholder="Volatility (decimal)" />
+        <select name="optionType" value={inputs.optionType} onChange={handleOptionTypeChange}>
+          <option value="call">Call</option>
+          <option value="put">Put</option>
+        </select>
+        <button onClick={calculateOption}>Calculate Option</button>
+      </div>
 
       {result && (
         <div>
           <h2>Option Calculation Result</h2>
-          {/* Display your calculation results here */}
+          <p>Option Price: ${result.optionPrice.toFixed(2)}</p>
           <p>Last calculated at {new Date(result.timestamp).toLocaleString()}</p>
         </div>
       )}
