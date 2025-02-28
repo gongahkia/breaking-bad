@@ -1,6 +1,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@layer tw-base, mantine, tw-components, tw-utilities;
+
+/* Import Mantine styles */
+@import '@mantine/core/styles.layer.css';
+
+/* Tailwind base styles */
+@layer tw-base {
+  @tailwind base;
+}
+
+/* Tailwind components and utilities */
+@layer tw-components {
+  @tailwind components;
+}
+
+@layer tw-utilities {
+  @tailwind utilities;
+}
 
 :root {
   --primary-color: #FF6B6B;

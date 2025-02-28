@@ -15,12 +15,12 @@ module.exports = {
         'text': 'var(--text-color)',
       },
       fontFamily: {
-        'sans': ['Poppins', 'sans-serif'],
+        'sans': ['Inter', 'sans-serif'],
       },
-      animation: {
-        'bounce-slow': 'bounce 3s infinite',
-      }
     },
+  },
+  corePlugins: {
+    preflight: false,
   },
   plugins: [],
 }
