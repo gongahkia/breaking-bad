@@ -170,18 +170,29 @@ export default function OptionCalculator() {
       )}
 
       <div>
-        <h2>Option Calculator</h2>
+        Stock Price:
         {inputMethod === "manual" && (
           <input name="stockPrice" type="number" value={inputs.stockPrice} onChange={handleInputChange} placeholder="Stock Price" />
         )}
+        <br></br>
+        Strike Price:
         <input name="strikePrice" type="number" value={inputs.strikePrice} onChange={handleInputChange} placeholder="Strike Price" />
+        <br></br>
+        Time to Expiration:
         <input name="timeToExpiration" type="number" value={inputs.timeToExpiration} onChange={handleInputChange} placeholder="Time to Expiration (years)" />
+        <br></br>
+        Interest Rate:
         <input name="interestRate" type="number" value={inputs.interestRate} onChange={handleInputChange} placeholder="Interest Rate (decimal)" />
+        <br></br>
+        Volatility:
         <input name="volatility" type="number" value={inputs.volatility} onChange={handleInputChange} placeholder="Volatility (decimal)" />
+        <br></br>
+        Option Type:
         <select name="optionType" value={inputs.optionType} onChange={handleOptionTypeChange}>
           <option value="call">Call</option>
           <option value="put">Put</option>
         </select>
+        <br></br>
         <button onClick={calculateOption}>Calculate Option</button>
       </div>
 
@@ -193,7 +204,9 @@ export default function OptionCalculator() {
         </div>
       )}
 
+      Stock Ticker: 
       {inputMethod === "ticker" && <p>Note: Due to Alpha Vantage's 25 request/day limit, stock data is only fetched when you submit a ticker.</p>}
+      <br></br>
     </div>
   )
 }
