@@ -114,34 +114,57 @@ export default function OptionCalculator() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
-      {/* Price Mode Toggle */}
-      <div className="flex items-center justify-center space-x-8">
-        {[
-          { value: "auto", label: "Current Stock Price" },
-          { value: "manual", label: "Manual Stock Price" }
-        ].map(({ value, label }) => (
-          <label key={value} className="flex items-center cursor-pointer group">
-            <input
-              type="radio"
-              value={value}
-              checked={priceMode === value}
-              onChange={() => setPriceMode(value as "auto" | "manual")}
-              className="sr-only"
-            />
-            <div className={`
-              w-5 h-5 rounded-full mr-3 flex items-center justify-center transition-all duration-200
-              ${priceMode === value 
-                ? "bg-gradient-to-br from-blue-500 to-blue-600 shadow-md" 
-                : "bg-gray-300 group-hover:bg-gray-400"
-              }
-            `}>
-              {priceMode === value && (
-                <div className="w-2 h-2 rounded-full bg-white"></div>
-              )}
-            </div>
-            <span className="text-gray-700 font-medium">{label}</span>
-          </label>
-        ))}
+      {/* Price Mode Toggle - Simplified Radio Buttons */}
+      <div className="flex items-start justify-center space-x-8 bg-gray-100 p-6 rounded-lg">
+        <label className="flex items-center cursor-pointer group">
+          <input
+            type="radio"
+            name="priceMode"
+            value="auto"
+            checked={priceMode === "auto"}
+            onChange={() => setPriceMode("auto")}
+            className="sr-only"
+          />
+          <div className={`
+            w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0 mr-3
+            ${priceMode === "auto" 
+              ? "border-blue-500 bg-blue-500" 
+              : "border-gray-400 bg-white group-hover:border-blue-300"
+            }
+          `}>
+            {priceMode === "auto" && (
+              <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+            )}
+          </div>
+          <span className="text-gray-700 font-medium select-none">
+            Current Stock Price
+          </span>
+        </label>
+
+        <label className="flex items-center cursor-pointer group">
+          <input
+            type="radio"
+            name="priceMode"
+            value="manual"
+            checked={priceMode === "manual"}
+            onChange={() => setPriceMode("manual")}
+            className="sr-only"
+          />
+          <div className={`
+            w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0 mr-3
+            ${priceMode === "manual" 
+              ? "border-blue-500 bg-blue-500" 
+              : "border-gray-400 bg-white group-hover:border-blue-300"
+            }
+          `}>
+            {priceMode === "manual" && (
+              <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+            )}
+          </div>
+          <span className="text-gray-700 font-medium select-none">
+            Manual Stock Price
+          </span>
+        </label>
       </div>
 
       {/* Price Input Section */}
@@ -197,7 +220,7 @@ export default function OptionCalculator() {
               <input
                 type="text"
                 className="w-full px-4 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium border border-gray-300 cursor-not-allowed"
-                value={`$${autoPrice.toFixed(2)}`}
+                value={`${autoPrice.toFixed(2)}`}
                 disabled
               />
             </div>
@@ -373,8 +396,8 @@ export default function OptionCalculator() {
           <h3 className="text-xl font-semibold text-gray-800 mb-6">Calculation Results</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
-              { label: "Call Option Price", value: `$${result.callOptionPrice}`, color: "text-green-600" },
-              { label: "Put Option Price", value: `$${result.putOptionPrice}`, color: "text-red-600" },
+              { label: "Call Option Price", value: `${result.callOptionPrice}`, color: "text-green-600" },
+              { label: "Put Option Price", value: `${result.putOptionPrice}`, color: "text-red-600" },
               { label: "Implied Volatility", value: result.impliedVolatility, color: "text-blue-600" },
               { label: "Delta", value: result.delta, color: "text-purple-600" },
             ].map(({ label, value, color }) => (
