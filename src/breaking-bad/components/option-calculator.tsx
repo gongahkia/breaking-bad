@@ -4,20 +4,9 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { calculateOption } from "../app/actions/calculate"
 import StockTicker from "./StockTicker"
-
-interface CalculationResult {
-  callOptionPrice: string
-  putOptionPrice: string
-  impliedVolatility: string
-  delta: string
-  timestamp: string
-}
-
-interface FormData {
-  strikePrice: string
-  dividendYield: string
-  timeToExpiration: string
-}
+import HeatMap from "./VolatilityHeatMap"
+import TradingRecommendations from "./TradingRecommendations"
+import { CalculationResult, FormData, OptionInputs } from "./types"
 
 export default function OptionCalculator() {
   const [volatilityPercent, setVolatilityPercent] = useState(16)
@@ -30,6 +19,7 @@ export default function OptionCalculator() {
   const [submittedTicker, setSubmittedTicker] = useState("")
   const [autoPrice, setAutoPrice] = useState<number | null>(null)
   const [manualPrice, setManualPrice] = useState("100")
+  
   const [formData, setFormData] = useState<FormData>({
     strikePrice: "100",
     dividendYield: "0",
@@ -68,6 +58,7 @@ export default function OptionCalculator() {
     return null
   }
 
+  // Calculate option prices
   async function handleCalculate() {
     const validationError = validateInputs()
     if (validationError) {
@@ -112,9 +103,22 @@ export default function OptionCalculator() {
 
   const canCalculate = priceMode === "manual" || (priceMode === "auto" && autoPrice !== null)
 
+  // Create option inputs for child components
+  const getOptionInputs = (): OptionInputs => {
+    const stockPrice = priceMode === "auto" ? (autoPrice || 0) : Number(manualPrice)
+    return {
+      stockPrice,
+      strikePrice: Number(formData.strikePrice),
+      interestRate: interestRatePercent / 100,
+      dividendYield: Number(formData.dividendYield),
+      timeToExpiration: Number(formData.timeToExpiration),
+      volatility: volatilityPercent / 100,
+    }
+  }
+
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
-      {/* Price Mode Toggle - Simplified Radio Buttons */}
+    <div className="max-w-6xl mx-auto p-6 space-y-8">
+      {/* Price Mode Toggle */}
       <div className="flex items-start justify-center space-x-8 bg-gray-100 p-6 rounded-lg">
         <label className="flex items-center cursor-pointer group">
           <input
@@ -385,7 +389,7 @@ export default function OptionCalculator() {
         </motion.div>
       )}
 
-      {/* Results */}
+      {/* Results Display */}
       {result && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -393,7 +397,7 @@ export default function OptionCalculator() {
           transition={{ duration: 0.5 }}
           className="bg-white rounded-xl border border-gray-200 p-6 shadow-lg"
         >
-          <h3 className="text-xl font-semibold text-gray-800 mb-6">Calculation Results</h3>
+          <h3 className="text-xl font-semibold text-gray-800 mb-6">Theoretical Pricing Results</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
               { label: "Call Option Price", value: `${result.callOptionPrice}`, color: "text-green-600" },
@@ -417,6 +421,15 @@ export default function OptionCalculator() {
           </div>
         </motion.div>
       )}
+
+      {/* Heat Map Component */}
+      <HeatMap 
+        optionInputs={getOptionInputs()} 
+        canGenerate={canCalculate && validateInputs() === null} 
+      />
+
+      {/* Trading Recommendations Component */}
+      <TradingRecommendations result={result} />
     </div>
   )
 }
