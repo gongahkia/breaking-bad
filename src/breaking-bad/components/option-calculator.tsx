@@ -13,27 +13,77 @@ interface CalculationResult {
   timestamp: string
 }
 
+interface FormData {
+  strikePrice: string
+  dividendYield: string
+  timeToExpiration: string
+}
+
 export default function OptionCalculator() {
   const [volatilityPercent, setVolatilityPercent] = useState(16)
   const [interestRatePercent, setInterestRatePercent] = useState(5)
   const [isCalculating, setIsCalculating] = useState(false)
-  const [result, setResult] = useState(null)
-  const [error, setError] = useState(null)
+  const [result, setResult] = useState<CalculationResult | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [priceMode, setPriceMode] = useState<"auto" | "manual">("auto")
   const [tickerInput, setTickerInput] = useState("AAPL")
   const [submittedTicker, setSubmittedTicker] = useState("")
   const [autoPrice, setAutoPrice] = useState<number | null>(null)
   const [manualPrice, setManualPrice] = useState("100")
+  const [formData, setFormData] = useState<FormData>({
+    strikePrice: "100",
+    dividendYield: "0",
+    timeToExpiration: "1"
+  })
+
+  const handleFormDataChange = (field: keyof FormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const validateInputs = (): string | null => {
+    const stockPrice = priceMode === "auto" ? autoPrice : Number(manualPrice)
+    const strikePrice = Number(formData.strikePrice)
+    const timeToExpiration = Number(formData.timeToExpiration)
+    const dividendYield = Number(formData.dividendYield)
+
+    if (!stockPrice || stockPrice <= 0) {
+      return "Stock price must be a positive number"
+    }
+    if (!strikePrice || strikePrice <= 0) {
+      return "Strike price must be a positive number"
+    }
+    if (!timeToExpiration || timeToExpiration <= 0) {
+      return "Time to expiration must be a positive number"
+    }
+    if (dividendYield < 0) {
+      return "Dividend yield cannot be negative"
+    }
+    if (volatilityPercent <= 0) {
+      return "Volatility must be a positive number"
+    }
+    if (interestRatePercent < 0) {
+      return "Interest rate cannot be negative"
+    }
+
+    return null
+  }
 
   async function handleCalculate() {
+    const validationError = validateInputs()
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+
     setIsCalculating(true)
     setError(null)
+    
     try {
-      const stockPrice = priceMode === "auto" ? (autoPrice !== null ? autoPrice : 0) : Number(manualPrice)
-      const strikePrice = Number((document.getElementById("strike-price") as HTMLInputElement).value)
+      const stockPrice = priceMode === "auto" ? (autoPrice || 0) : Number(manualPrice)
+      const strikePrice = Number(formData.strikePrice)
       const interestRate = interestRatePercent / 100
-      const dividendYield = Number((document.getElementById("dividend-yield") as HTMLInputElement).value)
-      const timeToExpiration = Number((document.getElementById("expiration-time") as HTMLInputElement).value)
+      const dividendYield = Number(formData.dividendYield)
+      const timeToExpiration = Number(formData.timeToExpiration)
       const volatility = volatilityPercent / 100
 
       const inputs = {
@@ -45,216 +95,249 @@ export default function OptionCalculator() {
         volatility,
       }
 
-      const result = await calculateOption(inputs)
-      setResult(result)
+      const calculationResult = await calculateOption(inputs)
+      setResult(calculationResult)
     } catch (err) {
-      setError("Failed to calculate option prices. Please check your inputs.")
+      setError("Failed to calculate option prices. Please check your inputs and try again.")
     } finally {
       setIsCalculating(false)
     }
   }
 
+  const handleTickerSubmit = () => {
+    if (tickerInput.trim()) {
+      setSubmittedTicker(tickerInput.trim())
+    }
+  }
+
+  const canCalculate = priceMode === "manual" || (priceMode === "auto" && autoPrice !== null)
+
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto p-6 space-y-8">
       {/* Price Mode Toggle */}
-      <div className="flex items-center justify-center space-x-6 mb-8">
-        <label className="flex items-center cursor-pointer">
-          <input
-            type="radio"
-            value="auto"
-            checked={priceMode === "auto"}
-            onChange={() => setPriceMode("auto")}
-            className="sr-only"
-          />
-          <div
-            className={`w-5 h-5 rounded-full mr-3 flex items-center justify-center ${priceMode === "auto" ? "bg-gradient-to-br from-blue-400 to-blue-600 shadow-inner" : "bg-gray-200 shadow"}`}
-          >
-            {priceMode === "auto" && <div className="w-2 h-2 rounded-full bg-white"></div>}
-          </div>
-          <span className="text-gray-700 font-medium">Current Stock Price</span>
-        </label>
-        <label className="flex items-center cursor-pointer">
-          <input
-            type="radio"
-            value="manual"
-            checked={priceMode === "manual"}
-            onChange={() => setPriceMode("manual")}
-            className="sr-only"
-          />
-          <div
-            className={`w-5 h-5 rounded-full mr-3 flex items-center justify-center ${priceMode === "manual" ? "bg-gradient-to-br from-blue-400 to-blue-600 shadow-inner" : "bg-gray-200 shadow"}`}
-          >
-            {priceMode === "manual" && <div className="w-2 h-2 rounded-full bg-white"></div>}
-          </div>
-          <span className="text-gray-700 font-medium">Manual Stock Price</span>
-        </label>
+      <div className="flex items-center justify-center space-x-8">
+        {[
+          { value: "auto", label: "Current Stock Price" },
+          { value: "manual", label: "Manual Stock Price" }
+        ].map(({ value, label }) => (
+          <label key={value} className="flex items-center cursor-pointer group">
+            <input
+              type="radio"
+              value={value}
+              checked={priceMode === value}
+              onChange={() => setPriceMode(value as "auto" | "manual")}
+              className="sr-only"
+            />
+            <div className={`
+              w-5 h-5 rounded-full mr-3 flex items-center justify-center transition-all duration-200
+              ${priceMode === value 
+                ? "bg-gradient-to-br from-blue-500 to-blue-600 shadow-md" 
+                : "bg-gray-300 group-hover:bg-gray-400"
+              }
+            `}>
+              {priceMode === value && (
+                <div className="w-2 h-2 rounded-full bg-white"></div>
+              )}
+            </div>
+            <span className="text-gray-700 font-medium">{label}</span>
+          </label>
+        ))}
       </div>
 
-      {/* Section for auto vs. manual price selection */}
+      {/* Price Input Section */}
       {priceMode === "auto" ? (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="space-y-4"
+          className="space-y-6"
         >
-          <label className="block text-sm font-medium text-gray-700">Enter Ticker:</label>
-          <div className="flex space-x-2">
-            <input
-              type="text"
-              placeholder="AAPL"
-              value={tickerInput}
-              onChange={(e) => setTickerInput(e.target.value.toUpperCase())}
-              className="w-full px-4 py-3 rounded-lg bg-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]"
-            />
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setSubmittedTicker(tickerInput)}
-              className="px-6 py-3 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white font-medium shadow-[3px_3px_6px_rgba(0,0,0,0.1),-3px_-3px_6px_rgba(255,255,255,0.8)] hover:shadow-[1px_1px_3px_rgba(0,0,0,0.1),-1px_-1px_3px_rgba(255,255,255,0.8)] transition-all duration-200"
-            >
-              Submit
-            </motion.button>
-          </div>
-          <p className="text-sm text-gray-500">
-            Note: Due to Alpha Vantage's 25 request/day limit, stock data is only fetched when you submit a ticker.
-          </p>
-          {submittedTicker ? (
-            <div className="mt-4 p-5 rounded-xl bg-gray-100 shadow-[3px_3px_6px_rgba(0,0,0,0.1),-3px_-3px_6px_rgba(255,255,255,0.8)]">
-              <StockTicker ticker={submittedTicker} onPriceUpdate={(price) => setAutoPrice(price)} />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Enter Ticker Symbol:
+            </label>
+            <div className="flex space-x-3">
+              <input
+                type="text"
+                placeholder="e.g., AAPL"
+                value={tickerInput}
+                onChange={(e) => setTickerInput(e.target.value.toUpperCase())}
+                className="flex-1 px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                maxLength={10}
+              />
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleTickerSubmit}
+                disabled={!tickerInput.trim()}
+                className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
+              >
+                Get Price
+              </motion.button>
             </div>
-          ) : (
-            <p className="text-gray-500 italic">Enter a ticker and submit to load stock data.</p>
+            <p className="mt-2 text-sm text-gray-500">
+              Note: Stock data fetching is limited to 25 requests per day
+            </p>
+          </div>
+
+          {submittedTicker && (
+            <div className="p-5 rounded-xl bg-gray-50 border border-gray-200">
+              <StockTicker 
+                ticker={submittedTicker} 
+                onPriceUpdate={(price) => setAutoPrice(price)} 
+              />
+            </div>
           )}
+
           {autoPrice !== null && (
-            <div className="mt-4">
-              <label htmlFor="initial-price" className="block text-sm font-medium text-gray-700 mb-2">
-                Initial Stock Price (S0)
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Current Stock Price (S₀)
               </label>
               <input
                 type="text"
-                id="initial-price"
-                className="w-full px-4 py-3 rounded-lg bg-gray-200 text-gray-700 font-medium border-none focus:outline-none shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]"
-                value={autoPrice}
-                disabled={true}
+                className="w-full px-4 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium border border-gray-300 cursor-not-allowed"
+                value={`$${autoPrice.toFixed(2)}`}
+                disabled
               />
             </div>
           )}
         </motion.div>
       ) : (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-          <label htmlFor="manual-price" className="block text-sm font-medium text-gray-700 mb-2">
-            Initial Stock Price (S0)
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 0.3 }}
+        >
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Stock Price (S₀)
           </label>
           <input
-            type="text"
-            id="manual-price"
+            type="number"
             value={manualPrice}
             onChange={(e) => setManualPrice(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg bg-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]"
+            min="0"
+            step="0.01"
+            className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            placeholder="Enter stock price"
           />
         </motion.div>
       )}
 
-      {/* The rest of your Option Calculator inputs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+      {/* Option Parameters */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label htmlFor="strike-price" className="block text-sm font-medium text-gray-700 mb-2">
-            Strike Price (X)
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Strike Price (K)
           </label>
           <input
-            type="text"
-            id="strike-price"
-            defaultValue="100"
-            className="w-full px-4 py-3 rounded-lg bg-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]"
+            type="number"
+            value={formData.strikePrice}
+            onChange={(e) => handleFormDataChange("strikePrice", e.target.value)}
+            min="0"
+            step="0.01"
+            className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
           />
         </div>
 
         <div>
-          <label htmlFor="interest-rate" className="block text-sm font-medium text-gray-700 mb-2">
-            Risk-free Interest Rate (%)
-          </label>
-          <div className="relative">
-            <input
-              type="number"
-              id="interest-rate"
-              value={interestRatePercent}
-              onChange={(e) => setInterestRatePercent(Number(e.target.value))}
-              className="w-full px-4 py-3 rounded-lg bg-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.8)] pr-10"
-            />
-            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-500">%</div>
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="dividend-yield" className="block text-sm font-medium text-gray-700 mb-2">
-            Dividend Yield (q)
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Risk-free Rate (%)
           </label>
           <input
-            type="text"
-            id="dividend-yield"
-            defaultValue="0"
-            className="w-full px-4 py-3 rounded-lg bg-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]"
+            type="number"
+            value={interestRatePercent}
+            onChange={(e) => setInterestRatePercent(Number(e.target.value))}
+            min="0"
+            step="0.1"
+            className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
           />
         </div>
 
         <div>
-          <label htmlFor="expiration-time" className="block text-sm font-medium text-gray-700 mb-2">
-            Time to Expiration (t in years)
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Dividend Yield (%)
           </label>
           <input
-            type="text"
-            id="expiration-time"
-            defaultValue="1"
-            className="w-full px-4 py-3 rounded-lg bg-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]"
+            type="number"
+            value={formData.dividendYield}
+            onChange={(e) => handleFormDataChange("dividendYield", e.target.value)}
+            min="0"
+            step="0.1"
+            className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
           />
         </div>
 
         <div>
-          <label htmlFor="volatility" className="block text-sm font-medium text-gray-700 mb-2">
-            Expected Volatility (%)
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Time to Expiration (years)
           </label>
-          <div className="relative">
-            <input
-              type="number"
-              id="volatility"
-              value={volatilityPercent}
-              onChange={(e) => setVolatilityPercent(Number(e.target.value))}
-              step="0.1"
-              className="w-full px-4 py-3 rounded-lg bg-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.1),inset_-2px_-2px_5px_rgba(255,255,255,0.8)] pr-10"
-            />
-            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-500">%</div>
-          </div>
+          <input
+            type="number"
+            value={formData.timeToExpiration}
+            onChange={(e) => handleFormDataChange("timeToExpiration", e.target.value)}
+            min="0"
+            step="0.01"
+            className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          />
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Volatility (%)
+          </label>
+          <input
+            type="number"
+            value={volatilityPercent}
+            onChange={(e) => setVolatilityPercent(Number(e.target.value))}
+            min="0"
+            step="0.1"
+            className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          />
         </div>
       </div>
 
-      <div className="flex justify-center mt-8">
+      {/* Calculate Button */}
+      <div className="flex justify-center pt-4">
         <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
+          whileHover={{ scale: canCalculate ? 1.02 : 1 }}
+          whileTap={{ scale: canCalculate ? 0.98 : 1 }}
           onClick={handleCalculate}
-          disabled={isCalculating}
-          className="px-8 py-4 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white font-medium text-lg shadow-[5px_5px_10px_rgba(0,0,0,0.1),-5px_-5px_10px_rgba(255,255,255,0.8)] hover:shadow-[2px_2px_5px_rgba(0,0,0,0.1),-2px_-2px_5px_rgba(255,255,255,0.8)] transition-all duration-200 disabled:opacity-70"
+          disabled={isCalculating || !canCalculate}
+          className={`
+            px-8 py-4 rounded-xl font-medium text-lg transition-all duration-200 shadow-lg
+            ${canCalculate && !isCalculating
+              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 hover:shadow-xl"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }
+          `}
         >
           {isCalculating ? (
             <div className="flex items-center">
               <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-current"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
               >
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <circle 
+                  className="opacity-25" 
+                  cx="12" 
+                  cy="12" 
+                  r="10" 
+                  stroke="currentColor" 
+                  strokeWidth="4"
+                />
                 <path
                   className="opacity-75"
                   fill="currentColor"
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
+                />
               </svg>
               Calculating...
             </div>
           ) : (
-            "Calculate"
+            "Calculate Options"
           )}
         </motion.button>
       </div>
@@ -264,9 +347,18 @@ export default function OptionCalculator() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl bg-red-50 p-5 shadow-[3px_3px_6px_rgba(0,0,0,0.1),-3px_-3px_6px_rgba(255,255,255,0.8)]"
+          className="rounded-lg bg-red-50 border border-red-200 p-4"
         >
-          <div className="text-sm text-red-700">{error}</div>
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          </div>
         </motion.div>
       )}
 
@@ -276,26 +368,30 @@ export default function OptionCalculator() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mt-8 rounded-xl bg-gray-100 p-6 shadow-[5px_5px_10px_rgba(0,0,0,0.1),-5px_-5px_10px_rgba(255,255,255,0.8)]"
+          className="bg-white rounded-xl border border-gray-200 p-6 shadow-lg"
         >
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Results</h3>
-          <div className="space-y-4">
+          <h3 className="text-xl font-semibold text-gray-800 mb-6">Calculation Results</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
-              { label: "Call Option Price", value: `$${result.callOptionPrice}` },
-              { label: "Put Option Price", value: `$${result.putOptionPrice}` },
-              { label: "Implied Volatility", value: result.impliedVolatility },
-              { label: "Delta", value: result.delta },
-            ].map(({ label, value }) => (
+              { label: "Call Option Price", value: `$${result.callOptionPrice}`, color: "text-green-600" },
+              { label: "Put Option Price", value: `$${result.putOptionPrice}`, color: "text-red-600" },
+              { label: "Implied Volatility", value: result.impliedVolatility, color: "text-blue-600" },
+              { label: "Delta", value: result.delta, color: "text-purple-600" },
+            ].map(({ label, value, color }) => (
               <div
                 key={label}
-                className="p-3 rounded-lg bg-white shadow-[2px_2px_5px_rgba(0,0,0,0.05),-2px_-2px_5px_rgba(255,255,255,0.5)] flex justify-between"
+                className="p-4 rounded-lg bg-gray-50 border border-gray-200 flex justify-between items-center"
               >
                 <span className="text-gray-700 font-medium">{label}</span>
-                <span className="text-blue-600 font-semibold">{value}</span>
+                <span className={`font-bold text-lg ${color}`}>{value}</span>
               </div>
             ))}
           </div>
-          <p className="mt-4 text-sm text-gray-500">Last calculated at {new Date(result.timestamp).toLocaleString()}</p>
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <p className="text-sm text-gray-500 text-center">
+              Calculated on {new Date(result.timestamp).toLocaleString()}
+            </p>
+          </div>
         </motion.div>
       )}
     </div>

@@ -66,7 +66,7 @@ export default function OptionCalculatorWrapper() {
                 href="https://github.com/richardleii58"
                 className="text-blue-600 hover:underline font-medium transition-colors"
               >
-                Richard Lim
+                Richard Lei
               </a>
             </p>
           </motion.div>
