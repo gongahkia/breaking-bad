@@ -40,20 +40,36 @@ export default function StockTicker({ ticker, onPriceUpdate }: StockTickerProps)
         })
       }, 100)
     } else {
-      clearInterval(intervalRef.current)
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
       setLoadingProgress(100) // Set to 100% when loading is done
     }
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
     }
-  }, [isLoading]) // Removed unnecessary dependency: ticker
+  }, [isLoading])
 
+  // Handle loading progress when data is loaded
   useEffect(() => {
     if (!isLoading && data && data["05. price"]) {
       setLoadingProgress(100) // Ensure it's 100% when data is loaded
     }
   }, [data, isLoading])
+
+  // Notify the parent component with the auto-fetched price when it changes
+  useEffect(() => {
+    if (data && data["05. price"] && onPriceUpdate) {
+      const price = Number.parseFloat(data["05. price"])
+      if (!isNaN(price)) {
+        onPriceUpdate(price)
+      }
+    }
+  }, [data, onPriceUpdate])
 
   if (!shouldFetch) {
     return (
@@ -105,12 +121,6 @@ export default function StockTicker({ ticker, onPriceUpdate }: StockTickerProps)
           {data["07. latest trading day"] && (
             <div className="text-sm text-gray-500">Last updated: {data["07. latest trading day"]}</div>
           )}
-          {/* Notify the parent component with the auto-fetched price when it changes */}
-          {useEffect(() => {
-            if (onPriceUpdate) {
-              onPriceUpdate(Number.parseFloat(data["05. price"]))
-            }
-          }, [data, onPriceUpdate])}
         </motion.div>
       ) : (
         !isLoading && <div className="text-gray-500 italic">Price data is unavailable.</div>
