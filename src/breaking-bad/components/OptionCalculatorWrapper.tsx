@@ -17,8 +17,8 @@ const OptionCalculator = dynamic(() => import("./option-calculator"), {
 
 export default function OptionCalculatorWrapper() {
   return (
-    <div className="font-sans antialiased bg-gray-100 text-gray-900 min-h-screen flex flex-col">
-      <header className="py-8 bg-gradient-to-r from-gray-100 to-gray-200">
+    <div className="font-sans antialiased bg-gradient-to-br from-[#f8fafc] via-[#f1f5f9] to-[#e0e7ef] text-gray-900 min-h-screen flex flex-col">
+      <header className="py-10 bg-gradient-to-r from-[#f1f5f9] to-[#e0e7ef] shadow-sm">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -26,32 +26,36 @@ export default function OptionCalculatorWrapper() {
             transition={{ duration: 0.5 }}
             className="text-center"
           >
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Breaking Bad</h1>
-            <p className="text-gray-600 text-lg">Calculate option prices quickly and accurately.</p>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-3 tracking-tight">
+              Breaking Bad
+            </h1>
+            <p className="text-gray-500 text-lg font-medium">
+              Calculate option prices quickly and accurately.
+            </p>
           </motion.div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 flex-grow">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="max-w-4xl mx-auto"
+          className="w-full max-w-5xl"
         >
-          <div className="rounded-2xl bg-white p-8 shadow-[10px_10px_20px_rgba(0,0,0,0.1),-10px_-10px_20px_rgba(255,255,255,0.8)]">
+          <div className="rounded-3xl bg-white/90 p-10 shadow-2xl border border-gray-100">
             <OptionCalculator />
           </div>
         </motion.div>
       </main>
 
-      <footer className="py-6 bg-gradient-to-r from-gray-100 to-gray-200">
+      <footer className="py-6 bg-gradient-to-r from-[#f1f5f9] to-[#e0e7ef] border-t border-gray-200">
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="text-gray-600"
+            className="text-gray-500"
           >
             <p>
               Made with <span className="text-red-500">❤️</span> by{" "}

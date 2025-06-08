@@ -1,77 +1,78 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* Import Inter font for a modern, readable look */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* Color Variables: Light & Dark Mode */
 :root {
-  --background: #E5E7EB; /* Light gray for neumorphism */
-  --foreground: #1E293B;
-  --primary: #3B82F6;
-  --primary-light: #60A5FA;
-  --secondary: #9CA3AF; /* Light gray-blue */
-  --accent: #F59E0B;
-  --success: #10B981;
-  --error: #EF4444;
-  --shadow-light: #F9FAFA; /* Lighter shadow color */
-  --shadow-dark: #D1D5DB; /* Darker shadow color */
+  --background: #f7fafc;
+  --foreground: #1a202c;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary: #64748b;
+  --accent: #f59e0b;
+  --success: #10b981;
+  --error: #ef4444;
+  --border: #e5e7eb;
+  --input-bg: #fff;
+  --input-border: #e5e7eb;
+  --input-focus: #2563eb22;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #4B5563; /* Dark gray for dark mode neumorphism */
-    --foreground: #E5E7EB;
-    --primary: #60A5FA;
-    --primary-light: #93C5FD;
-    --secondary: #6B7280; /* Darker gray-blue */
-    --accent: #F59E0B;
-    --success: #10B981;
-    --error: #EF4444;
-    --shadow-light: #6B7280; /* Lighter shadow color for dark mode */
-    --shadow-dark: #374151; /* Darker shadow color for dark mode */
+    --background: #18181b;
+    --foreground: #f3f4f6;
+    --primary: #60a5fa;
+    --primary-hover: #3b82f6;
+    --secondary: #94a3b8;
+    --accent: #fbbf24;
+    --success: #34d399;
+    --error: #f87171;
+    --border: #27272a;
+    --input-bg: #22223a;
+    --input-border: #27272a;
+    --input-focus: #60a5fa33;
   }
 }
 
-html,
-body {
-  max-width: 100vw; /* Changed from 200vw to 100vw */
-  overflow-x: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+html, body {
   min-height: 100vh;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  color: var(--foreground);
+  width: 100%;
   background: var(--background);
-  font-family: 'Inter', sans-serif;
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
 }
 
 a {
   color: var(--primary);
   text-decoration: none;
-  transition: color 0.3s ease, box-shadow 0.3s ease; /* Added shadow transition */
+  transition: color 0.2s;
+  font-weight: 500;
 }
-
-a:hover {
-  color: var(--primary-light);
-  text-decoration: none; /* Removed underline */
-  box-shadow: 0 2px 5px var(--shadow-dark); /* Added shadow */
+a:hover, a:focus {
+  color: var(--primary-hover);
+  text-decoration: underline;
+  outline: none;
 }
 
 h1, h2, h3, h4, h5, h6 {
   color: var(--foreground);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.2;
-  margin-bottom: 0.5em;
+  margin-bottom: 0.6em;
+  letter-spacing: -0.01em;
 }
 
 p {
@@ -79,48 +80,106 @@ p {
 }
 
 input, select, textarea {
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   font-size: 1rem;
-  padding: 0.5em 1em;
-  border: none; /* Removed border */
-  border-radius: 0.5rem; /* Slightly larger border radius */
-  background-color: var(--background);
+  padding: 0.75em 1em;
+  border-radius: 0.75rem;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
   color: var(--foreground);
-  transition: box-shadow 0.3s ease; /* Changed transition */
-  box-shadow: inset 2px 2px 5px var(--shadow-dark), /* Neumorphic shadow */
-              inset -2px -2px 5px var(--shadow-light);
+  box-shadow: none;
+  transition: border 0.2s, box-shadow 0.2s;
+  outline: none;
 }
 
 input:focus, select:focus, textarea:focus {
-  outline: none;
-  border: none; /* Removed border on focus */
-  box-shadow: 2px 2px 5px var(--shadow-dark), /* Neumorphic shadow */
-              -2px -2px 5px var(--shadow-light);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--input-focus);
+}
+
+input[disabled], select[disabled], textarea[disabled] {
+  background: #f1f5f9;
+  color: #a0aec0;
+  cursor: not-allowed;
 }
 
 button {
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   font-size: 1rem;
-  font-weight: 500;
-  padding: 0.5em 1em;
-  background-color: var(--primary);
-  color: white;
+  font-weight: 600;
+  padding: 0.75em 1.5em;
+  border-radius: 0.75rem;
   border: none;
-  border-radius: 0.5rem; /* Slightly larger border radius */
+  background: var(--primary);
+  color: #fff;
   cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Added shadow transition */
-  box-shadow: 2px 2px 5px var(--shadow-dark), /* Neumorphic shadow */
-              -2px -2px 5px var(--shadow-light);
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: none;
+  outline: none;
+  display: inline-block;
 }
 
-button:hover {
-  background-color: var(--primary-light);
-  box-shadow: inset 2px 2px 5px var(--shadow-dark), /* Inset shadow on hover */
-              inset -2px -2px 5px var(--shadow-light);
+button:hover, button:focus {
+  background: var(--primary-hover);
+  box-shadow: 0 2px 8px 0 rgba(37, 99, 235, 0.08);
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+button[disabled] {
+  background: var(--border);
+  color: var(--secondary);
+  cursor: not-allowed;
+}
+
+label {
+  font-weight: 500;
+  color: var(--foreground);
+  margin-bottom: 0.3em;
+  display: block;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2em 0;
+}
+
+::-webkit-input-placeholder { color: #a0aec0; }
+::-moz-placeholder { color: #a0aec0; }
+:-ms-input-placeholder { color: #a0aec0; }
+::placeholder { color: #a0aec0; }
+
+@media (max-width: 600px) {
+  html, body {
+    font-size: 15px;
   }
+}
+
+/* Remove number input spinners for a cleaner look */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* For accessibility: focus ring */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Hide scrollbars for a cleaner look (optional) */
+body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) var(--background);
+}
+body::-webkit-scrollbar {
+  width: 8px;
+  background: var(--background);
+}
+body::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 8px;
 }
