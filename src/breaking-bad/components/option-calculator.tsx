@@ -1,4 +1,3 @@
-// components/option-calculator.tsx
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -10,8 +9,6 @@ import HeatMap from "./VolatilityHeatMap";
 import TradingRecommendations from "./TradingRecommendations";
 import { CalculationResult, FormData, OptionInputs, OptionRecommendation, HeatMapData, StockData } from "./types";
 
-// IMPORTANT: This component no longer sets its own full-screen layout.
-// It assumes it's rendered within a parent layout (like OptionCalculatorWrapper.tsx)
 export default function OptionCalculator() {
   const [volatilityPercent, setVolatilityPercent] = useState(16);
   const [interestRatePercent, setInterestRatePercent] = useState(5);
@@ -224,9 +221,9 @@ export default function OptionCalculator() {
   }, []);
 
   return (
-    // Removed the outermost layout div. This component now focuses solely on its content.
-    // The wrapper (OptionCalculatorWrapper.tsx) handles the full page layout.
-    <div className="flex flex-col lg:flex-row h-full bg-gray-100 text-gray-800"> {/* Changed min-h-screen to h-full */}
+    // This div is now the main layout for the calculator's content,
+    // occupying the full height available from its parent (OptionCalculatorWrapper's main content area)
+    <div className="flex flex-col lg:flex-row h-full bg-gray-100 text-gray-800">
       {/* Left Card - Input Form */}
       <div className="lg:w-1/2 p-6 space-y-6 bg-white shadow-lg rounded-lg m-4">
         {/* Mode Toggle */}

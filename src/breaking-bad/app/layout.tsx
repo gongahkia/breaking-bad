@@ -25,7 +25,7 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} bg-gray-200`}> {/* Apply background here */}
+      <body className={`${geistSans.variable} ${geistMono.variable} bg-gray-200`}>
         {children}
       </body>
     </html>

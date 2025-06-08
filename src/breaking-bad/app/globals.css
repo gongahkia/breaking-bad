@@ -1,3 +1,5 @@
+/* globals.css */
+
 /* Adding tailwind shit */
 
 @import "tailwindcss";
@@ -6,6 +8,10 @@
 /* Import Inter font for a modern, readable look */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* These !important declarations are generally bad practice as they can override Tailwind
+   and make debugging harder. If you are using Tailwind classes directly in your JSX,
+   you likely don't need these here. However, I'm keeping them as they were in your
+   original file to avoid breaking other parts you might rely on, but be aware. */
 .flex {
   display: flex !important;
 }
@@ -56,7 +62,8 @@
 }
 
 html, body {
-  min-height: 100vh;
+  /* CRITICAL CHANGE: Remove min-height: 100vh; */
+  height: 100%; /* Set to 100% to fill parent's height */
   width: 100%;
   background: var(--background);
   color: var(--foreground);
@@ -68,6 +75,10 @@ html, body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  /* Add overflow-x: hidden to prevent horizontal scrolling of the entire page */
+  overflow-x: hidden;
+  /* Optional: If you want to force vertical scrolling on the body when content exceeds,
+     you could use overflow-y: auto; but OptionCalculatorWrapper handles its own overflow. */
 }
 
 *,
