@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useCallback } from "react" // Add useCallback import
+import { useState, useCallback, useEffect } from "react" // Add useEffect import
 import { motion } from "framer-motion"
-import { CalculationResult, OptionRecommendation } from "./types"
+import { CalculationResult, OptionRecommendation } from "./types" // Ensure OptionRecommendation is correctly typed
 
 interface TradingRecommendationsProps {
   result: CalculationResult | null
@@ -15,30 +15,44 @@ export default function TradingRecommendations({ result }: TradingRecommendation
   const [recommendations, setRecommendations] = useState<OptionRecommendation[]>([])
   const [error, setError] = useState<string | null>(null)
 
-  // Use useCallback to memoize the generateRecommendations function
-  const generateRecommendations = useCallback(async () => {
-    if (!result || !marketCallPrice || !marketPutPrice) {
-      setError("Please calculate theoretical prices and enter valid market prices first.")
-      return
-    }
+  // Reset recommendations and market prices when result changes (new theoretical prices)
+  useEffect(() => {
+    setRecommendations([]);
+    setShowRecommendations(false);
+    setError(null);
+    setMarketCallPrice(""); // Clear market prices too
+    setMarketPutPrice("");
+  }, [result]); // Depend on result to trigger reset
 
-    const theoreticalCall = parseFloat(result.callOptionPrice)
-    const theoreticalPut = parseFloat(result.putOptionPrice)
-    const marketCall = parseFloat(marketCallPrice)
-    const marketPut = parseFloat(marketPutPrice)
-
-    if (isNaN(marketCall) || isNaN(marketPut) || marketCall < 0 || marketPut < 0) {
-      setError("Please enter valid positive numbers for market prices.");
+  // Memoize the generateRecommendations function
+  const generateRecommendations = useCallback(() => {
+    // Basic validation: ensure result is not null and has call/put prices
+    if (!result || result.callOptionPrice === null || result.putOptionPrice === null || result.callOptionPrice === undefined || result.putOptionPrice === undefined) {
+      setError("Theoretical option prices are not available. Please calculate them first.");
+      setShowRecommendations(false);
+      setRecommendations([]);
       return;
     }
 
-    setError(null)
+    // Validate market prices
+    const theoreticalCall = parseFloat(result.callOptionPrice.toString()); // Ensure string for parseFloat
+    const theoreticalPut = parseFloat(result.putOptionPrice.toString());   // Ensure string for parseFloat
+    const marketCall = parseFloat(marketCallPrice);
+    const marketPut = parseFloat(marketPutPrice);
 
-    const newRecommendations: OptionRecommendation[] = [] // Renamed to avoid conflict
+    if (isNaN(marketCall) || isNaN(marketPut) || marketCall < 0 || marketPut < 0) {
+      setError("Please enter valid positive numbers for market prices.");
+      setShowRecommendations(false);
+      setRecommendations([]);
+      return;
+    }
+    setError(null); // Clear previous errors
+
+    const newRecommendations: OptionRecommendation[] = []
 
     // Call option recommendation
     const callDifference = theoreticalCall - marketCall
-    const callPercentDiff = Math.abs(callDifference) / marketCall * 100
+    const callPercentDiff = marketCall === 0 ? 0 : Math.abs(callDifference) / marketCall * 100 // Handle division by zero
 
     let callAction: 'buy' | 'sell' | 'hold' = 'hold'
     let callConfidence: 'high' | 'medium' | 'low' = 'low'
@@ -56,7 +70,7 @@ export default function TradingRecommendations({ result }: TradingRecommendation
       } else {
         callReason = `Call is fairly valued. Price difference is only ${callPercentDiff.toFixed(1)}%.`
       }
-    } else if (callDifference < 0) { // Added condition for negative difference
+    } else if (callDifference < 0) {
       if (callPercentDiff > 10) {
         callAction = 'sell'
         callConfidence = 'high'
@@ -72,7 +86,6 @@ export default function TradingRecommendations({ result }: TradingRecommendation
        callReason = `Call is exactly valued. Price difference is 0%.`
     }
 
-
     newRecommendations.push({
       type: 'call',
       action: callAction,
@@ -85,7 +98,7 @@ export default function TradingRecommendations({ result }: TradingRecommendation
 
     // Put option recommendation
     const putDifference = theoreticalPut - marketPut
-    const putPercentDiff = Math.abs(putDifference) / marketPut * 100
+    const putPercentDiff = marketPut === 0 ? 0 : Math.abs(putDifference) / marketPut * 100 // Handle division by zero
 
     let putAction: 'buy' | 'sell' | 'hold' = 'hold'
     let putConfidence: 'high' | 'medium' | 'low' = 'low'
@@ -103,7 +116,7 @@ export default function TradingRecommendations({ result }: TradingRecommendation
       } else {
         putReason = `Put is fairly valued. Price difference is only ${putPercentDiff.toFixed(1)}%.`
       }
-    } else if (putDifference < 0) { // Added condition for negative difference
+    } else if (putDifference < 0) {
       if (putPercentDiff > 10) {
         putAction = 'sell'
         putConfidence = 'high'
@@ -133,27 +146,18 @@ export default function TradingRecommendations({ result }: TradingRecommendation
     setShowRecommendations(true)
   }, [result, marketCallPrice, marketPutPrice]); // Dependencies for useCallback
 
-  // Reset recommendations when result changes (new theoretical prices)
-  // This will clear previous recommendations if user calculates a new option
-  // or fetches new stock data.
-  // This useEffect ensures that the recommendations are cleared when a new 'result' comes in.
-  // This prevents displaying old recommendations with new theoretical values.
-  useEffect(() => {
-    setRecommendations([]);
-    setShowRecommendations(false);
-    setError(null);
-    setMarketCallPrice(""); // Clear market prices too
-    setMarketPutPrice("");
-  }, [result]);
-
-
-  // Disable button if theoretical prices are not available or market prices are not entered/valid
-  const canGenerate = result && (!isNaN(parseFloat(marketCallPrice)) || !isNaN(parseFloat(marketPutPrice))) && parseFloat(marketCallPrice) >= 0 && parseFloat(marketPutPrice) >= 0;
-
+  // Determine if the button should be enabled
+  // It requires result to be present AND theoretical prices to be numbers
+  // AND market prices to be numbers >= 0
+  const canGenerate = result &&
+                      result.callOptionPrice !== null && result.callOptionPrice !== undefined &&
+                      result.putOptionPrice !== null && result.putOptionPrice !== undefined &&
+                      !isNaN(parseFloat(marketCallPrice)) && parseFloat(marketCallPrice) >= 0 &&
+                      !isNaN(parseFloat(marketPutPrice)) && parseFloat(marketPutPrice) >= 0;
 
   return (
-    <div className="bg-gray-50 rounded-xl p-4"> {/* This div now serves as the outer container */}
-      {/* Market Price Inputs for Recommendations (Your existing structure) */}
+    <div className="bg-gray-50 rounded-xl p-4">
+      {/* Market Price Inputs for Recommendations */}
       <h4 className="text-lg font-semibold text-gray-800 mb-3">Trading Recommendations</h4>
       <p className="text-sm text-gray-600 mb-4">
         Enter current market prices to get buy/sell recommendations based on theoretical values:
@@ -222,7 +226,7 @@ export default function TradingRecommendations({ result }: TradingRecommendation
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mt-6 space-y-4" // Added margin-top
+          className="mt-6 space-y-4"
         >
           {recommendations.map((rec, index) => (
             <div
@@ -269,8 +273,16 @@ export default function TradingRecommendations({ result }: TradingRecommendation
               </div>
 
               <p className="text-gray-700 mb-3">
-                <span className="font-semibold italic">{rec.reason.split('.')[0]}.</span> {/* First sentence bold and italic */}
-                {rec.reason.split('.').slice(1).join('.')} {/* Rest of the reason */}
+                {/* Robustly parse the reason into bold/italic first sentence and rest */}
+                {rec.reason.split('.').length > 1 ? (
+                  <>
+                    <span className="font-semibold italic">{rec.reason.split('.')[0]}.</span>
+                    {rec.reason.split('.').slice(1).join('.')}
+                  </>
+                ) : (
+                  // Fallback if there's no period to split, just bold/italic the whole thing
+                  <span className="font-semibold italic">{rec.reason}</span>
+                )}
               </p>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
