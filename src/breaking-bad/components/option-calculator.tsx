@@ -25,6 +25,11 @@ export default function OptionCalculator() {
     timeToExpiration: "1"
   })
 
+  // States for additional components
+  const [heatMapGenerated, setHeatMapGenerated] = useState(false)
+  const [tradingRecsGenerated, setTradingRecsGenerated] = useState(false)
+  const [stockData, setStockData] = useState<any>(null)
+
   const resultsRef = useRef<HTMLDivElement>(null)
 
   const handleFormDataChange = (field: keyof FormData, value: string) => {
@@ -160,6 +165,7 @@ export default function OptionCalculator() {
                   <StockTicker
                     ticker={submittedTicker}
                     onPriceUpdate={(price) => setAutoPrice(price)}
+                    onDataUpdate={(data) => setStockData(data)}
                   />
                 </div>
               )}
@@ -287,6 +293,42 @@ export default function OptionCalculator() {
             <p className="text-sm text-red-800">{error}</p>
           </div>
         )}
+
+        {/* Generate Heat Map Button */}
+        <div className="bg-gray-50 rounded-xl p-4">
+          <h4 className="text-lg font-semibold text-gray-800 mb-3">Volatility Heat Map</h4>
+          <button
+            onClick={() => setHeatMapGenerated(true)}
+            disabled={!canCalculate || validateInputs() !== null}
+            className={`
+              w-full px-6 py-3 rounded-xl font-semibold transition-all duration-200
+              ${canCalculate && validateInputs() === null
+                ? "bg-green-500 text-white hover:bg-green-600"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }
+            `}
+          >
+            Generate Volatility Heat Map
+          </button>
+        </div>
+
+        {/* Generate Trading Recommendations Button */}
+        <div className="bg-gray-50 rounded-xl p-4">
+          <h4 className="text-lg font-semibold text-gray-800 mb-3">Trading Recommendations</h4>
+          <button
+            onClick={() => setTradingRecsGenerated(true)}
+            disabled={!result}
+            className={`
+              w-full px-6 py-3 rounded-xl font-semibold transition-all duration-200
+              ${result
+                ? "bg-purple-500 text-white hover:bg-purple-600"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }
+            `}
+          >
+            Generate Recommendations
+          </button>
+        </div>
       </div>
 
       {/* Right Panel - Results Card */}
@@ -294,16 +336,29 @@ export default function OptionCalculator() {
         ref={resultsRef}
         className="w-96 bg-gray-50 rounded-2xl border border-gray-200 p-6 overflow-y-auto flex-shrink-0"
       >
-        {result ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            <h3 className="text-xl font-bold text-gray-800">Results</h3>
-            
-            {/* Pricing Results */}
-            <div className="space-y-3">
+        <div className="space-y-6">
+          <h3 className="text-xl font-bold text-gray-800">Results</h3>
+          
+          {/* Stock Data */}
+          {stockData && (
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <h4 className="font-semibold text-gray-800 mb-2">Stock Information</h4>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">Ticker:</span> {stockData.ticker}</p>
+                <p><span className="font-medium">Price:</span> ${stockData.price}</p>
+                <p><span className="font-medium">Updated:</span> {stockData.lastUpdate}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Pricing Results */}
+          {result && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-3"
+            >
+              <h4 className="font-semibold text-gray-800">Option Pricing</h4>
               {[
                 { label: "Call Option Price", value: `${result.callOptionPrice}`, color: "text-green-600" },
                 { label: "Put Option Price", value: `${result.putOptionPrice}`, color: "text-red-600" },
@@ -318,31 +373,50 @@ export default function OptionCalculator() {
                   <span className={`font-bold ${color}`}>{value}</span>
                 </div>
               ))}
-            </div>
+            </motion.div>
+          )}
 
-            {/* Heat Map */}
-            <div>
-              <h4 className="text-lg font-semibold text-gray-800 mb-3">Volatility Heat Map</h4>
+          {/* Heat Map Results */}
+          {heatMapGenerated && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-lg p-4 border border-gray-200"
+            >
+              <h4 className="font-semibold text-gray-800 mb-3">Volatility Heat Map</h4>
               <HeatMap
                 optionInputs={getOptionInputs()}
-                canGenerate={canCalculate && validateInputs() === null}
+                canGenerate={true}
+                displayOnly={true}
               />
-            </div>
+            </motion.div>
+          )}
 
-            {/* Trading Recommendations */}
-            <div>
-              <h4 className="text-lg font-semibold text-gray-800 mb-3">Trading Recommendations</h4>
-              <TradingRecommendations result={result} />
+          {/* Trading Recommendations Results */}
+          {tradingRecsGenerated && result && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-lg p-4 border border-gray-200"
+            >
+              <h4 className="font-semibold text-gray-800 mb-3">Trading Recommendations</h4>
+              <TradingRecommendations 
+                result={result} 
+                displayOnly={true}
+              />
+            </motion.div>
+          )}
+
+          {/* Empty State */}
+          {!result && !stockData && !heatMapGenerated && !tradingRecsGenerated && (
+            <div className="h-full flex items-center justify-center text-gray-400">
+              <div className="text-center">
+                <p className="text-sm">Calculate options to see results here</p>
+                <p className="text-xs mt-2">← Input parameters on the left</p>
+              </div>
             </div>
-          </motion.div>
-        ) : (
-          <div className="h-full flex items-center justify-center text-gray-400">
-            <div className="text-center">
-              <p className="text-sm">Calculate options to see results here</p>
-              <p className="text-xs mt-2">← Input parameters on the left</p>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )

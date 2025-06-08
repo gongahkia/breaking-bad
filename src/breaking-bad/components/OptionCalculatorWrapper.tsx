@@ -17,26 +17,52 @@ const OptionCalculator = dynamic(() => import("./option-calculator"), {
 
 export default function OptionCalculatorWrapper() {
   return (
-    <div className="w-screen h-screen flex items-center justify-center bg-gray-100 overflow-hidden">
+    <div className="w-screen h-screen flex flex-col bg-gray-100 overflow-hidden">
+      {/* Fixed Header */}
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-center py-6 bg-white shadow-sm border-b border-gray-200 flex-shrink-0"
+      >
+        <h1 className="text-3xl font-bold text-gray-900 mb-1">Breaking Bad</h1>
+        <p className="text-gray-500 text-base">Calculate option prices quickly and accurately.</p>
+      </motion.header>
+
+      {/* Main Content */}
       <motion.div
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white rounded-3xl shadow-2xl w-full h-full max-w-7xl max-h-[95vh] p-8 flex flex-col gap-6 overflow-hidden"
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className="flex-1 bg-white shadow-2xl m-4 rounded-3xl overflow-hidden"
       >
-        <header className="text-center flex-shrink-0">
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Breaking Bad</h1>
-          <p className="text-gray-500 text-base">Calculate option prices quickly and accurately.</p>
-        </header>
-        
-        <div className="flex-1 overflow-hidden">
+        <div className="h-full p-8">
           <OptionCalculator />
         </div>
-        
-        <footer className="text-center text-xs text-gray-400 flex-shrink-0">
-          Made with <span className="text-red-500">❤️</span> by Gabriel Ong and Richard Lei
-        </footer>
       </motion.div>
+
+      {/* Fixed Footer */}
+      <motion.footer
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="text-center py-4 bg-white border-t border-gray-200 text-xs text-gray-400 flex-shrink-0"
+      >
+        Made with <span className="text-red-500">❤️</span> by{" "}
+        <a
+          href="https://github.com/gongahkia"
+          className="text-blue-600 hover:underline font-medium transition-colors"
+        >
+          Gabriel Ong
+        </a>{" "}
+        and{" "}
+        <a
+          href="https://github.com/richardleii58"
+          className="text-blue-600 hover:underline font-medium transition-colors"
+        >
+          Richard Lei
+        </a>
+      </motion.footer>
     </div>
   )
 }
