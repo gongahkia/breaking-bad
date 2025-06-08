@@ -16,14 +16,19 @@
     "next": "^15.1.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hook-form": "^7.57.0",
     "simple-statistics": "^7.8.7",
     "swr": "^2.3.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@tailwindcss/cli": "^4.1.8",
     "@types/node": "22.10.7",
     "@types/react": "19.0.7",
+    "autoprefixer": "^10.4.21",
     "eslint": "^9",
-    "eslint-config-next": "15.1.5"
+    "eslint-config-next": "15.1.5",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^4.1.8"
   }
 }
