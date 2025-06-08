@@ -17,65 +17,26 @@ const OptionCalculator = dynamic(() => import("./option-calculator"), {
 
 export default function OptionCalculatorWrapper() {
   return (
-    <div className="font-sans antialiased bg-gradient-to-br from-[#f8fafc] via-[#f1f5f9] to-[#e0e7ef] text-gray-900 min-h-screen flex flex-col">
-      <header className="py-10 bg-gradient-to-r from-[#f1f5f9] to-[#e0e7ef] shadow-sm">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center"
-          >
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-3 tracking-tight">
-              Breaking Bad
-            </h1>
-            <p className="text-gray-500 text-lg font-medium">
-              Calculate option prices quickly and accurately.
-            </p>
-          </motion.div>
+    <div className="w-screen h-screen flex items-center justify-center bg-gray-100 overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white rounded-3xl shadow-2xl w-full h-full max-w-7xl max-h-[95vh] p-8 flex flex-col gap-6 overflow-hidden"
+      >
+        <header className="text-center flex-shrink-0">
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Breaking Bad</h1>
+          <p className="text-gray-500 text-base">Calculate option prices quickly and accurately.</p>
+        </header>
+        
+        <div className="flex-1 overflow-hidden">
+          <OptionCalculator />
         </div>
-      </header>
-
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="w-full max-w-5xl"
-        >
-          <div className="rounded-3xl bg-white/90 p-10 shadow-2xl border border-gray-100">
-            <OptionCalculator />
-          </div>
-        </motion.div>
-      </main>
-
-      <footer className="py-6 bg-gradient-to-r from-[#f1f5f9] to-[#e0e7ef] border-t border-gray-200">
-        <div className="container mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-gray-500"
-          >
-            <p>
-              Made with <span className="text-red-500">❤️</span> by{" "}
-              <a
-                href="https://github.com/gongahkia"
-                className="text-blue-600 hover:underline font-medium transition-colors"
-              >
-                Gabriel Ong
-              </a>{" "}
-              and{" "}
-              <a
-                href="https://github.com/richardleii58"
-                className="text-blue-600 hover:underline font-medium transition-colors"
-              >
-                Richard Lei
-              </a>
-            </p>
-          </motion.div>
-        </div>
-      </footer>
+        
+        <footer className="text-center text-xs text-gray-400 flex-shrink-0">
+          Made with <span className="text-red-500">❤️</span> by Gabriel Ong and Richard Lei
+        </footer>
+      </motion.div>
     </div>
   )
 }

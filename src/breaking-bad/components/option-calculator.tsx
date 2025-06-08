@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { calculateOption } from "../app/actions/calculate"
 import StockTicker from "./StockTicker"
@@ -24,6 +24,8 @@ export default function OptionCalculator() {
     dividendYield: "0",
     timeToExpiration: "1"
   })
+
+  const resultsRef = useRef<HTMLDivElement>(null)
 
   const handleFormDataChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -86,74 +88,75 @@ export default function OptionCalculator() {
     }
   }
 
-  return (
-    <div className="space-y-10">
-      {/* Mode Toggle */}
-      <div className="flex items-center justify-center gap-8 mb-2">
-        {[
-          { label: "Current Stock Price", value: "auto" },
-          { label: "Manual Stock Price", value: "manual" }
-        ].map(opt => (
-          <label key={opt.value} className="flex items-center cursor-pointer group">
-            <input
-              type="radio"
-              name="priceMode"
-              value={opt.value}
-              checked={priceMode === opt.value}
-              onChange={() => setPriceMode(opt.value as "auto" | "manual")}
-              className="sr-only"
-            />
-            <span className={`
-              w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 mr-3
-              ${priceMode === opt.value
-                ? "border-blue-500 bg-blue-500"
-                : "border-gray-300 bg-white group-hover:border-blue-300"
-              }
-              shadow
-            `}>
-              {priceMode === opt.value && (
-                <span className="w-3 h-3 rounded-full bg-white block"></span>
-              )}
-            </span>
-            <span className="text-gray-800 font-semibold text-base select-none">
-              {opt.label}
-            </span>
-          </label>
-        ))}
-      </div>
+  useEffect(() => {
+    if (result && resultsRef.current) {
+      resultsRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [result])
 
-      {/* Price Input Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-gradient-to-br from-white via-gray-50 to-gray-100 rounded-2xl p-6 shadow border border-gray-100">
+  return (
+    <div className="flex h-full gap-8 overflow-hidden">
+      {/* Left Panel - Input Form */}
+      <div className="flex-1 overflow-y-auto pr-4 space-y-6">
+        {/* Mode Toggle */}
+        <div className="flex items-center justify-center gap-8">
+          {[
+            { label: "Current Stock Price", value: "auto" },
+            { label: "Manual Stock Price", value: "manual" }
+          ].map(opt => (
+            <label key={opt.value} className="flex items-center cursor-pointer group">
+              <input
+                type="radio"
+                name="priceMode"
+                value={opt.value}
+                checked={priceMode === opt.value}
+                onChange={() => setPriceMode(opt.value as "auto" | "manual")}
+                className="sr-only"
+              />
+              <span className={`
+                w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 mr-3
+                ${priceMode === opt.value
+                  ? "border-blue-500 bg-blue-500"
+                  : "border-gray-300 bg-white group-hover:border-blue-300"
+                }
+              `}>
+                {priceMode === opt.value && (
+                  <span className="w-2 h-2 rounded-full bg-white block"></span>
+                )}
+              </span>
+              <span className="text-gray-800 font-medium text-sm select-none">
+                {opt.label}
+              </span>
+            </label>
+          ))}
+        </div>
+
+        {/* Price Input */}
+        <div className="bg-gray-50 rounded-xl p-4">
           {priceMode === "auto" ? (
             <>
-              <label className="block text-sm font-semibold text-gray-600 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 Ticker Symbol
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 mb-3">
                 <input
                   type="text"
                   placeholder="e.g., AAPL"
                   value={tickerInput}
                   onChange={(e) => setTickerInput(e.target.value.toUpperCase())}
-                  className="flex-1 px-4 py-3 rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+                  className="flex-1 px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   maxLength={10}
                 />
-                <motion.button
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.97 }}
+                <button
                   onClick={handleTickerSubmit}
                   disabled={!tickerInput.trim()}
-                  className="px-5 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold disabled:opacity-50 hover:from-blue-600 hover:to-blue-700 shadow transition-all"
+                  className="px-4 py-2 text-sm rounded-lg bg-blue-500 text-white font-medium disabled:opacity-50 hover:bg-blue-600"
                 >
-                  Get Price
-                </motion.button>
+                  Get
+                </button>
               </div>
-              <p className="mt-2 text-xs text-gray-400">
-                Stock data fetching limited to 25 requests/day
-              </p>
               {submittedTicker && (
-                <div className="mt-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                <div className="mb-3">
                   <StockTicker
                     ticker={submittedTicker}
                     onPriceUpdate={(price) => setAutoPrice(price)}
@@ -161,13 +164,13 @@ export default function OptionCalculator() {
                 </div>
               )}
               {autoPrice !== null && (
-                <div className="mt-4">
+                <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">
                     Current Stock Price (S₀)
                   </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-3 rounded-lg bg-gray-100 text-gray-700 font-semibold border border-gray-200"
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 font-medium border border-gray-200"
                     value={`${autoPrice.toFixed(2)}`}
                     disabled
                   />
@@ -176,7 +179,7 @@ export default function OptionCalculator() {
             </>
           ) : (
             <>
-              <label className="block text-sm font-semibold text-gray-600 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 Stock Price (S₀)
               </label>
               <input
@@ -185,17 +188,17 @@ export default function OptionCalculator() {
                 onChange={(e) => setManualPrice(e.target.value)}
                 min="0"
                 step="0.01"
-                className="w-full px-4 py-3 rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+                className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 placeholder="Enter stock price"
               />
             </>
           )}
         </div>
 
-        {/* Option Parameters */}
-        <div className="bg-gradient-to-br from-white via-gray-50 to-gray-100 rounded-2xl p-6 shadow border border-gray-100 grid gap-5">
+        {/* Option Parameters Grid */}
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-600 mb-2">
+            <label className="block text-sm font-medium text-gray-600 mb-2">
               Strike Price (K)
             </label>
             <input
@@ -204,11 +207,11 @@ export default function OptionCalculator() {
               onChange={(e) => handleFormDataChange("strikePrice", e.target.value)}
               min="0"
               step="0.01"
-              className="w-full px-4 py-3 rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-600 mb-2">
+            <label className="block text-sm font-medium text-gray-600 mb-2">
               Risk-free Rate (%)
             </label>
             <input
@@ -217,11 +220,11 @@ export default function OptionCalculator() {
               onChange={(e) => setInterestRatePercent(Number(e.target.value))}
               min="0"
               step="0.1"
-              className="w-full px-4 py-3 rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-600 mb-2">
+            <label className="block text-sm font-medium text-gray-600 mb-2">
               Dividend Yield (%)
             </label>
             <input
@@ -230,11 +233,11 @@ export default function OptionCalculator() {
               onChange={(e) => handleFormDataChange("dividendYield", e.target.value)}
               min="0"
               step="0.1"
-              className="w-full px-4 py-3 rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-600 mb-2">
+            <label className="block text-sm font-medium text-gray-600 mb-2">
               Time to Expiration (years)
             </label>
             <input
@@ -243,11 +246,11 @@ export default function OptionCalculator() {
               onChange={(e) => handleFormDataChange("timeToExpiration", e.target.value)}
               min="0"
               step="0.01"
-              className="w-full px-4 py-3 rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-600 mb-2">
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-gray-600 mb-2">
               Volatility (%)
             </label>
             <input
@@ -256,111 +259,91 @@ export default function OptionCalculator() {
               onChange={(e) => setVolatilityPercent(Number(e.target.value))}
               min="0"
               step="0.1"
-              className="w-full px-4 py-3 rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
         </div>
+
+        {/* Calculate Button */}
+        <div className="flex justify-center">
+          <button
+            onClick={handleCalculate}
+            disabled={isCalculating || !canCalculate}
+            className={`
+              px-8 py-3 rounded-xl font-semibold shadow-lg transition-all duration-200
+              ${canCalculate && !isCalculating
+                ? "bg-blue-500 text-white hover:bg-blue-600"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }
+            `}
+          >
+            {isCalculating ? "Calculating..." : "Calculate Options"}
+          </button>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="rounded-xl bg-red-50 border border-red-200 p-4">
+            <p className="text-sm text-red-800">{error}</p>
+          </div>
+        )}
       </div>
 
-      {/* Calculate Button */}
-      <div className="flex justify-center">
-        <motion.button
-          whileHover={{ scale: canCalculate ? 1.03 : 1 }}
-          whileTap={{ scale: canCalculate ? 0.98 : 1 }}
-          onClick={handleCalculate}
-          disabled={isCalculating || !canCalculate}
-          className={`
-            px-10 py-4 rounded-2xl font-semibold text-lg shadow-lg transition-all duration-200
-            ${canCalculate && !isCalculating
-              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 hover:shadow-xl"
-              : "bg-gray-200 text-gray-400 cursor-not-allowed"
-            }
-          `}
-        >
-          {isCalculating ? (
-            <div className="flex items-center">
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-current"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              Calculating...
+      {/* Right Panel - Results Card */}
+      <div 
+        ref={resultsRef}
+        className="w-96 bg-gray-50 rounded-2xl border border-gray-200 p-6 overflow-y-auto flex-shrink-0"
+      >
+        {result ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <h3 className="text-xl font-bold text-gray-800">Results</h3>
+            
+            {/* Pricing Results */}
+            <div className="space-y-3">
+              {[
+                { label: "Call Option Price", value: `${result.callOptionPrice}`, color: "text-green-600" },
+                { label: "Put Option Price", value: `${result.putOptionPrice}`, color: "text-red-600" },
+                { label: "Implied Volatility", value: result.impliedVolatility, color: "text-blue-600" },
+                { label: "Delta", value: result.delta, color: "text-purple-600" },
+              ].map(({ label, value, color }) => (
+                <div
+                  key={label}
+                  className="p-3 rounded-lg bg-white border border-gray-200 flex justify-between items-center text-sm"
+                >
+                  <span className="text-gray-700 font-medium">{label}</span>
+                  <span className={`font-bold ${color}`}>{value}</span>
+                </div>
+              ))}
             </div>
-          ) : (
-            "Calculate Options"
-          )}
-        </motion.button>
+
+            {/* Heat Map */}
+            <div>
+              <h4 className="text-lg font-semibold text-gray-800 mb-3">Volatility Heat Map</h4>
+              <HeatMap
+                optionInputs={getOptionInputs()}
+                canGenerate={canCalculate && validateInputs() === null}
+              />
+            </div>
+
+            {/* Trading Recommendations */}
+            <div>
+              <h4 className="text-lg font-semibold text-gray-800 mb-3">Trading Recommendations</h4>
+              <TradingRecommendations result={result} />
+            </div>
+          </motion.div>
+        ) : (
+          <div className="h-full flex items-center justify-center text-gray-400">
+            <div className="text-center">
+              <p className="text-sm">Calculate options to see results here</p>
+              <p className="text-xs mt-2">← Input parameters on the left</p>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Error Message */}
-      {error && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl bg-red-50 border border-red-200 p-4 max-w-xl mx-auto"
-        >
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Results Display */}
-      {result && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-gradient-to-br from-white via-gray-50 to-gray-100 rounded-2xl border border-gray-100 p-8 shadow-xl max-w-3xl mx-auto"
-        >
-          <h3 className="text-2xl font-bold text-gray-800 mb-6">Theoretical Pricing Results</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              { label: "Call Option Price", value: `${result.callOptionPrice}`, color: "text-green-600" },
-              { label: "Put Option Price", value: `${result.putOptionPrice}`, color: "text-red-600" },
-              { label: "Implied Volatility", value: result.impliedVolatility, color: "text-blue-600" },
-              { label: "Delta", value: result.delta, color: "text-purple-600" },
-            ].map(({ label, value, color }) => (
-              <div
-                key={label}
-                className="p-5 rounded-xl bg-white/70 border border-gray-100 flex justify-between items-center shadow"
-              >
-                <span className="text-gray-700 font-medium">{label}</span>
-                <span className={`font-bold text-lg ${color}`}>{value}</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <p className="text-xs text-gray-400 text-center">
-              Calculated on {new Date(result.timestamp).toLocaleString()}
-            </p>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Heat Map Component */}
-      <HeatMap
-        optionInputs={getOptionInputs()}
-        canGenerate={canCalculate && validateInputs() === null}
-      />
-
-      {/* Trading Recommendations Component */}
-      <TradingRecommendations result={result} />
     </div>
   )
 }
