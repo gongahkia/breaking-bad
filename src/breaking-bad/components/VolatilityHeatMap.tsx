@@ -100,7 +100,7 @@ const VolatilityHeatMap: React.FC<VolatilityHeatMapProps> = ({ heatMapData }) =>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h3 className="text-2xl font-bold mb-1">Volatility Sensitivity Heat Map</h3>
-            <p className="text-purple-100 text-sm">Theoretical option pricing across volatility scenarios</p>
+            <p className="text-purple-100 text-sm">Theoretical option pricing across volatility scenarios.</p>
           </div>
         </div>
       </div>
@@ -143,8 +143,6 @@ const VolatilityHeatMap: React.FC<VolatilityHeatMapProps> = ({ heatMapData }) =>
               </h4>
               <div className="flex items-center gap-4 text-sm text-gray-600">
                 <span>Volatility Range: {heatMapData[0]?.volatility}% - {heatMapData[heatMapData.length - 1]?.volatility}%</span>
-                <span>•</span>
-                <span>{heatMapData.length} Data Points</span>
               </div>
             </div>
             
@@ -232,29 +230,25 @@ const VolatilityHeatMap: React.FC<VolatilityHeatMapProps> = ({ heatMapData }) =>
                 >
                   <div className="text-center p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg">
                     <div className="text-3xl font-bold text-gray-800">
-                      {hoveredCell.volatility}%
+                      Volatility: {hoveredCell.volatility}% 
                     </div>
-                    <div className="text-sm text-gray-600">Volatility</div>
                   </div>
                   
                   <div className="grid grid-cols-1 gap-3">
                     <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
                       <div className="font-bold text-green-800 text-lg">
-                        ${hoveredCell.callPrice.toFixed(2)}
+                      Call Price: ${hoveredCell.callPrice.toFixed(2)}
                       </div>
-                      <div className="text-xs text-green-600">Call Price</div>
                     </div>
                     <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
                       <div className="font-bold text-red-800 text-lg">
-                        ${hoveredCell.putPrice.toFixed(2)}
+                      Put Price: ${hoveredCell.putPrice.toFixed(2)}
                       </div>
-                      <div className="text-xs text-red-600">Put Price</div>
                     </div>
                     <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="font-bold text-blue-800 text-lg">
-                        {hoveredCell.delta.toFixed(3)}
+                      Delta: {hoveredCell.delta.toFixed(3)}
                       </div>
-                      <div className="text-xs text-blue-600">Delta</div>
                     </div>
                   </div>
                 </motion.div>
