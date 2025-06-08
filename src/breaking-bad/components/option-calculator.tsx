@@ -8,8 +8,10 @@ import { calculateOption } from "../app/actions/calculate";
 import StockTicker from "./StockTicker";
 import HeatMap from "./VolatilityHeatMap";
 import TradingRecommendations from "./TradingRecommendations";
-import { CalculationResult, FormData, OptionInputs, OptionRecommendation, HeatMapData, StockData } from "./types"; // Import StockData
+import { CalculationResult, FormData, OptionInputs, OptionRecommendation, HeatMapData, StockData } from "./types";
 
+// IMPORTANT: This component no longer sets its own full-screen layout.
+// It assumes it's rendered within a parent layout (like OptionCalculatorWrapper.tsx)
 export default function OptionCalculator() {
   const [volatilityPercent, setVolatilityPercent] = useState(16);
   const [interestRatePercent, setInterestRatePercent] = useState(5);
@@ -34,7 +36,6 @@ export default function OptionCalculator() {
 
   const [recommendations, setRecommendations] = useState<OptionRecommendation[] | null>(null);
 
-  // ADDED: Initialize stockData state
   const [stockData, setStockData] = useState<StockData | null>(null);
 
   const {
@@ -153,38 +154,34 @@ export default function OptionCalculator() {
     };
   }, [priceMode, autoPrice, manualPrice, formData, interestRatePercent, volatilityPercent]);
 
-  // NEW: Heat map generation logic (moved from VolatilityHeatMap.tsx)
+  // Heat map generation logic
   const generateHeatMap = async () => {
-    const validationError = validateInputs(); // Validate all core inputs first
+    const validationError = validateInputs();
     if (validationError) {
-      setHeatMapError(validationError); // Set error specific to heatmap generation
-      setHeatMapData([]); // Clear old heatmap data
+      setHeatMapError(validationError);
+      setHeatMapData([]);
       return;
     }
 
     setIsGeneratingHeatMap(true);
-    setHeatMapError(null); // Clear previous errors
+    setHeatMapError(null);
 
     try {
       const heatMapResults: HeatMapData[] = [];
-      const baseInputs = getOptionInputs(); // Get current valid inputs
+      const baseInputs = getOptionInputs();
 
-      // Generate data for volatility range 5% to 50%
       for (let vol = 5; vol <= 50; vol += 2.5) {
         const inputs = {
           ...baseInputs,
-          volatility: vol / 100, // Override volatility for each iteration
+          volatility: vol / 100,
         };
 
         const calculationResult = await calculateOption(inputs);
 
-        // Ensure numbers are parsed safely and handle potential nulls from calculationResult
         const callPrice = typeof calculationResult.callOptionPrice === 'number' ? calculationResult.callOptionPrice : NaN;
         const putPrice = typeof calculationResult.putOptionPrice === 'number' ? calculationResult.putOptionPrice : NaN;
         const delta = typeof calculationResult.delta === 'number' ? calculationResult.delta : NaN;
 
-
-        // Only push if prices are valid numbers, otherwise this point in heatmap might be invalid
         if (!isNaN(callPrice) && !isNaN(putPrice) && !isNaN(delta)) {
           heatMapResults.push({
             volatility: vol,
@@ -193,7 +190,6 @@ export default function OptionCalculator() {
             delta: delta,
           });
         } else {
-          // Optionally, log an error or handle cases where a specific calculation fails
           console.warn(`Skipping heatmap point for volatility ${vol}% due to invalid calculation results.`);
         }
       }
@@ -202,7 +198,7 @@ export default function OptionCalculator() {
     } catch (err) {
       console.error("Failed to generate heat map:", err);
       setHeatMapError("Failed to generate heat map. Please check your inputs and try again.");
-      setHeatMapData([]); // Clear data on error
+      setHeatMapData([]);
     } finally {
       setIsGeneratingHeatMap(false);
     }
@@ -213,14 +209,14 @@ export default function OptionCalculator() {
     if ((result && resultsRef.current) || (heatMapData.length > 0 && resultsRef.current) || (recommendations && recommendations.length > 0 && resultsRef.current)) {
       resultsRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [result, heatMapData, recommendations]); // Listen to heatmapData and recommendations too
+  }, [result, heatMapData, recommendations]);
 
   const handlePriceUpdate = useCallback((price: number) => {
     setAutoPrice(price);
   }, []);
 
   const handleDataUpdate = useCallback((data: { ticker: string; price: number; lastUpdate: string }) => {
-    setStockData(data); // Set the stockData state here
+    setStockData(data);
   }, []);
 
   const handleRecommendationsGenerated = useCallback((generatedRecs: OptionRecommendation[]) => {
@@ -228,7 +224,9 @@ export default function OptionCalculator() {
   }, []);
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-100 text-gray-800">
+    // Removed the outermost layout div. This component now focuses solely on its content.
+    // The wrapper (OptionCalculatorWrapper.tsx) handles the full page layout.
+    <div className="flex flex-col lg:flex-row h-full bg-gray-100 text-gray-800"> {/* Changed min-h-screen to h-full */}
       {/* Left Card - Input Form */}
       <div className="lg:w-1/2 p-6 space-y-6 bg-white shadow-lg rounded-lg m-4">
         {/* Mode Toggle */}
@@ -413,71 +411,71 @@ export default function OptionCalculator() {
           </div>
         )}
 
-        {/* Generate Heat Map Button (Moved from HeatMap.tsx) */}
+        {/* Generate Heat Map Button */}
         <section className="bg-gray-50 rounded-xl p-4 space-y-4">
-          <h4 className="text-lg font-semibold text-gray-800">Volatility Heat Map Generation</h4>
-          <p className="text-sm text-gray-600">
-            Generate a sensitivity analysis showing option prices across a range of volatilities.
-          </p>
-          <motion.button
-            whileHover={{ scale: (canCalculate && validateInputs() === null) ? 1.02 : 1 }}
-            whileTap={{ scale: (canCalculate && validateInputs() === null) ? 0.98 : 1 }}
-            onClick={generateHeatMap}
-            disabled={isGeneratingHeatMap || !canCalculate || validateInputs() !== null}
-            className={`
-                w-full px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg
-                ${(canCalculate && validateInputs() === null)
-                    ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 hover:shadow-xl"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }
-              `}
-          >
-            {isGeneratingHeatMap ? (
-              <div className="flex items-center justify-center">
-                <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-current"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                Generating Heat Map...
+            <h4 className="text-lg font-semibold text-gray-800">Volatility Heat Map Generation</h4>
+            <p className="text-sm text-gray-600">
+                Generate a sensitivity analysis showing option prices across a range of volatilities.
+            </p>
+            <motion.button
+                whileHover={{ scale: (canCalculate && validateInputs() === null) ? 1.02 : 1 }}
+                whileTap={{ scale: (canCalculate && validateInputs() === null) ? 0.98 : 1 }}
+                onClick={generateHeatMap}
+                disabled={isGeneratingHeatMap || !canCalculate || validateInputs() !== null}
+                className={`
+                    w-full px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg
+                    ${(canCalculate && validateInputs() === null)
+                        ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 hover:shadow-xl"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }
+                `}
+            >
+                {isGeneratingHeatMap ? (
+                    <div className="flex items-center justify-center">
+                        <svg
+                            className="animate-spin -ml-1 mr-3 h-5 w-5 text-current"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                        >
+                            <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                            />
+                            <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                        </svg>
+                        Generating Heat Map...
+                    </div>
+                ) : (
+                    "Generate Volatility Heat Map"
+                )}
+            </motion.button>
+            {heatMapError && (
+              <div className="rounded-xl bg-red-50 border border-red-200 p-4 mt-2">
+                <p className="text-sm text-red-800">{heatMapError}</p>
               </div>
-            ) : (
-              "Generate Volatility Heat Map"
             )}
-          </motion.button>
-          {heatMapError && (
-            <div className="rounded-xl bg-red-50 border border-red-200 p-4 mt-2">
-              <p className="text-sm text-red-800">{heatMapError}</p>
-            </div>
-          )}
         </section>
 
 
         {/* Trading Recommendations Component - Stays on the left for inputs */}
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold border-b pb-2">Trading Recommendations Input</h2>
-          <p className="text-sm text-gray-600">
-            Enter current market prices to get buy/sell recommendations based on theoretical values.
-          </p>
-          <TradingRecommendations
-            result={result}
-            onGenerateRecommendations={handleRecommendationsGenerated}
-          />
+            <h2 className="text-xl font-semibold border-b pb-2">Trading Recommendations Input</h2>
+            <p className="text-sm text-gray-600">
+                Enter current market prices to get buy/sell recommendations based on theoretical values.
+            </p>
+            <TradingRecommendations
+                result={result}
+                onGenerateRecommendations={handleRecommendationsGenerated}
+            />
         </section>
 
       </div>
@@ -546,9 +544,9 @@ export default function OptionCalculator() {
           )}
 
           {/* Heat Map Results (Display only, receives data) */}
-          {heatMapData.length > 0 && ( // Only render if data exists
+          {heatMapData.length > 0 && (
             <HeatMap
-              heatMapData={heatMapData} // Pass the generated data
+              heatMapData={heatMapData}
             />
           )}
 
