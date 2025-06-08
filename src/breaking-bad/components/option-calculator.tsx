@@ -51,33 +51,38 @@ export default function OptionCalculator() {
     return null
   }, [priceMode, autoPrice, manualPrice, formData, volatilityPercent, interestRatePercent]);
 
-  async function handleCalculate() {
-    const validationError = validateInputs()
-    if (validationError) {
-      setError(validationError)
-      setResult(null); // Clear previous results on validation error
-      return
-    }
-    setIsCalculating(true)
-    setError(null)
-    try {
-      // Use the appropriate stock price based on the current mode
-      const stockPrice = priceMode === "auto" ? (autoPrice || 0) : Number(manualPrice)
 
-      const strikePrice = Number(formData.strikePrice)
-      const interestRate = interestRatePercent / 100
-      const dividendYield = Number(formData.dividendYield)
-      const timeToExpiration = Number(formData.timeToExpiration)
-      const volatility = volatilityPercent / 100
-      const inputs = { stockPrice, strikePrice, interestRate, dividendYield, timeToExpiration, volatility }
-      const calculationResult = await calculateOption(inputs)
-      setResult(calculationResult)
+  async function handleCalculate() {
+    const validationError = validateInputs();
+    if (validationError) {
+      setError(validationError);
+      setResult(null);
+      return;
+    }
+    setIsCalculating(true);
+    setError(null);
+    try {
+      const stockPrice = priceMode === "auto" ? (autoPrice || 0) : Number(manualPrice);
+      const strikePrice = Number(formData.strikePrice);
+      const interestRate = interestRatePercent / 100;
+      const dividendYield = Number(formData.dividendYield);
+      const timeToExpiration = Number(formData.timeToExpiration);
+      const volatility = volatilityPercent / 100;
+
+      const inputs = { stockPrice, strikePrice, interestRate, dividendYield, timeToExpiration, volatility };
+
+      // --- ADD THIS CONSOLE.LOG ---
+      console.log("Inputs being sent to calculateOption:", inputs);
+      // --- END ADDITION ---
+
+      const calculationResult = await calculateOption(inputs);
+      setResult(calculationResult);
     } catch (err) {
       console.error("Calculation failed:", err);
-      setError("Failed to calculate option prices. Please check your inputs and try again.")
+      setError("Failed to calculate option prices. Please check your inputs and try again.");
       setResult(null);
     } finally {
-      setIsCalculating(false)
+      setIsCalculating(false);
     }
   }
 
