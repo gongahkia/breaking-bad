@@ -133,7 +133,7 @@ export default function TradingRecommendations({ result }: TradingRecommendation
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-yellow-50 border border-yellow-200 rounded-xl p-6"
+        className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 shadow-md"
       >
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Market Analysis & Recommendations</h3>
         <p className="text-sm text-gray-600 mb-4">
@@ -142,11 +142,12 @@ export default function TradingRecommendations({ result }: TradingRecommendation
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="marketCallPrice" className="block text-sm font-medium text-gray-700 mb-2">
               Market Call Option Price
             </label>
             <input
               type="number"
+              id="marketCallPrice"
               value={marketCallPrice}
               onChange={(e) => setMarketCallPrice(e.target.value)}
               min="0"
@@ -157,11 +158,12 @@ export default function TradingRecommendations({ result }: TradingRecommendation
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="marketPutPrice" className="block text-sm font-medium text-gray-700 mb-2">
               Market Put Option Price
             </label>
             <input
               type="number"
+              id="marketPutPrice"
               value={marketPutPrice}
               onChange={(e) => setMarketPutPrice(e.target.value)}
               min="0"
@@ -196,14 +198,14 @@ export default function TradingRecommendations({ result }: TradingRecommendation
           animate={{ opacity: 1, y: 0 }}
           className="rounded-lg bg-red-50 border border-red-200 p-4"
         >
-          <div className="flex">
+          <div className="flex items-center">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
             </div>
             <div className="ml-3">
-              <p className="text-sm text-red-800">{error}</p>
+              <p className="text-sm font-medium text-red-800">{error}</p>
             </div>
           </div>
         </motion.div>
@@ -223,7 +225,8 @@ export default function TradingRecommendations({ result }: TradingRecommendation
               <div 
                 key={index}
                 className={`
-                  p-4 rounded-lg border-l-4 ${
+                  p-4 rounded-lg border-l-4 
+                  ${
                     rec.action === 'buy' ? 'border-green-500 bg-green-50' :
                     rec.action === 'sell' ? 'border-red-500 bg-red-50' :
                     'border-gray-500 bg-gray-50'
@@ -231,7 +234,7 @@ export default function TradingRecommendations({ result }: TradingRecommendation
                 `}
               >
                 <div className="flex justify-between items-start mb-2">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex flex-wrap items-center gap-2"> {/* Use flex-wrap for smaller screens */}
                     <span className="text-lg font-semibold capitalize text-gray-800">
                       {rec.type} Option
                     </span>
@@ -254,7 +257,7 @@ export default function TradingRecommendations({ result }: TradingRecommendation
                       {rec.confidence} confidence
                     </span>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0">
                     <div className="text-sm text-gray-600">Price Difference</div>
                     <div className={`font-bold ${rec.priceDifference > 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {rec.priceDifference > 0 ? '+' : ''}${rec.priceDifference.toFixed(2)}
@@ -280,7 +283,7 @@ export default function TradingRecommendations({ result }: TradingRecommendation
           
           <div className="mt-6 pt-4 border-t border-gray-200">
             <p className="text-sm text-gray-500 text-center">
-              ⚠️ These recommendations are based on theoretical Black-Scholes pricing and should not be considered as financial advice.
+              <span role="img" aria-label="warning">⚠️</span> These recommendations are based on theoretical Black-Scholes pricing and should not be considered as financial advice.
               Always conduct your own research and consider market conditions, liquidity, and risk tolerance before trading.
             </p>
           </div>
