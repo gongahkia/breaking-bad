@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@tailwindcss/cli": "^4.1.8",
     "@types/node": "22.10.7",
     "@types/react": "19.0.7",
     "autoprefixer": "^10.4.21",
