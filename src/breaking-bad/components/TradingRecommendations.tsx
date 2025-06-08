@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react" // Add useCallback import
 import { motion } from "framer-motion"
 import { CalculationResult, OptionRecommendation } from "./types"
 
@@ -15,21 +15,26 @@ export default function TradingRecommendations({ result }: TradingRecommendation
   const [recommendations, setRecommendations] = useState<OptionRecommendation[]>([])
   const [error, setError] = useState<string | null>(null)
 
-  // Generate recommendations based on market prices
-  const generateRecommendations = async () => {
+  // Use useCallback to memoize the generateRecommendations function
+  const generateRecommendations = useCallback(async () => {
     if (!result || !marketCallPrice || !marketPutPrice) {
-      setError("Please calculate theoretical prices and enter market prices first.")
+      setError("Please calculate theoretical prices and enter valid market prices first.")
       return
     }
-
-    setError(null)
 
     const theoreticalCall = parseFloat(result.callOptionPrice)
     const theoreticalPut = parseFloat(result.putOptionPrice)
     const marketCall = parseFloat(marketCallPrice)
     const marketPut = parseFloat(marketPutPrice)
 
-    const recommendations: OptionRecommendation[] = []
+    if (isNaN(marketCall) || isNaN(marketPut) || marketCall < 0 || marketPut < 0) {
+      setError("Please enter valid positive numbers for market prices.");
+      return;
+    }
+
+    setError(null)
+
+    const newRecommendations: OptionRecommendation[] = [] // Renamed to avoid conflict
 
     // Call option recommendation
     const callDifference = theoreticalCall - marketCall
@@ -51,7 +56,7 @@ export default function TradingRecommendations({ result }: TradingRecommendation
       } else {
         callReason = `Call is fairly valued. Price difference is only ${callPercentDiff.toFixed(1)}%.`
       }
-    } else {
+    } else if (callDifference < 0) { // Added condition for negative difference
       if (callPercentDiff > 10) {
         callAction = 'sell'
         callConfidence = 'high'
@@ -63,9 +68,12 @@ export default function TradingRecommendations({ result }: TradingRecommendation
       } else {
         callReason = `Call is fairly valued. Price difference is only ${callPercentDiff.toFixed(1)}%.`
       }
+    } else { // Exactly zero difference
+       callReason = `Call is exactly valued. Price difference is 0%.`
     }
 
-    recommendations.push({
+
+    newRecommendations.push({
       type: 'call',
       action: callAction,
       reason: callReason,
@@ -95,7 +103,7 @@ export default function TradingRecommendations({ result }: TradingRecommendation
       } else {
         putReason = `Put is fairly valued. Price difference is only ${putPercentDiff.toFixed(1)}%.`
       }
-    } else {
+    } else if (putDifference < 0) { // Added condition for negative difference
       if (putPercentDiff > 10) {
         putAction = 'sell'
         putConfidence = 'high'
@@ -107,9 +115,11 @@ export default function TradingRecommendations({ result }: TradingRecommendation
       } else {
         putReason = `Put is fairly valued. Price difference is only ${putPercentDiff.toFixed(1)}%.`
       }
+    } else { // Exactly zero difference
+      putReason = `Put is exactly valued. Price difference is 0%.`
     }
 
-    recommendations.push({
+    newRecommendations.push({
       type: 'put',
       action: putAction,
       reason: putReason,
@@ -119,168 +129,163 @@ export default function TradingRecommendations({ result }: TradingRecommendation
       priceDifference: putDifference
     })
 
-    setRecommendations(recommendations)
+    setRecommendations(newRecommendations)
     setShowRecommendations(true)
-  }
+  }, [result, marketCallPrice, marketPutPrice]); // Dependencies for useCallback
 
-  if (!result) {
-    return null
-  }
+  // Reset recommendations when result changes (new theoretical prices)
+  // This will clear previous recommendations if user calculates a new option
+  // or fetches new stock data.
+  // This useEffect ensures that the recommendations are cleared when a new 'result' comes in.
+  // This prevents displaying old recommendations with new theoretical values.
+  useEffect(() => {
+    setRecommendations([]);
+    setShowRecommendations(false);
+    setError(null);
+    setMarketCallPrice(""); // Clear market prices too
+    setMarketPutPrice("");
+  }, [result]);
+
+
+  // Disable button if theoretical prices are not available or market prices are not entered/valid
+  const canGenerate = result && (!isNaN(parseFloat(marketCallPrice)) || !isNaN(parseFloat(marketPutPrice))) && parseFloat(marketCallPrice) >= 0 && parseFloat(marketPutPrice) >= 0;
+
 
   return (
-    <div className="space-y-6">
-      {/* Market Price Inputs for Recommendations */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 shadow-md"
-      >
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Market Analysis & Recommendations</h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Enter current market prices to get buy/sell recommendations based on theoretical values:
-        </p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label htmlFor="marketCallPrice" className="block text-sm font-medium text-gray-700 mb-2">
-              Market Call Option Price
-            </label>
-            <input
-              type="number"
-              id="marketCallPrice"
-              value={marketCallPrice}
-              onChange={(e) => setMarketCallPrice(e.target.value)}
-              min="0"
-              step="0.01"
-              placeholder="Enter market call price"
-              className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="marketPutPrice" className="block text-sm font-medium text-gray-700 mb-2">
-              Market Put Option Price
-            </label>
-            <input
-              type="number"
-              id="marketPutPrice"
-              value={marketPutPrice}
-              onChange={(e) => setMarketPutPrice(e.target.value)}
-              min="0"
-              step="0.01"
-              placeholder="Enter market put price"
-              className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200"
-            />
-          </div>
-        </div>
+    <div className="bg-gray-50 rounded-xl p-4"> {/* This div now serves as the outer container */}
+      {/* Market Price Inputs for Recommendations (Your existing structure) */}
+      <h4 className="text-lg font-semibold text-gray-800 mb-3">Trading Recommendations</h4>
+      <p className="text-sm text-gray-600 mb-4">
+        Enter current market prices to get buy/sell recommendations based on theoretical values:
+      </p>
 
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={generateRecommendations}
-          disabled={!marketCallPrice || !marketPutPrice}
-          className={`
-            w-full px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-md
-            ${marketCallPrice && marketPutPrice
-              ? "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-700 hover:shadow-lg"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }
-          `}
-        >
-          Generate Recommendations
-        </motion.button>
-      </motion.div>
+      <div className="mb-3">
+        <label htmlFor="marketCallPrice" className="block text-sm font-medium text-gray-600 mb-2">
+          Market Call Option Price
+        </label>
+        <input
+          type="number"
+          id="marketCallPrice"
+          value={marketCallPrice}
+          onChange={(e) => setMarketCallPrice(e.target.value)}
+          min="0"
+          step="0.01"
+          placeholder="Enter market call price"
+          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="marketPutPrice" className="block text-sm font-medium text-gray-600 mb-2">
+          Market Put Option Price
+        </label>
+        <input
+          type="number"
+          id="marketPutPrice"
+          value={marketPutPrice}
+          onChange={(e) => setMarketPutPrice(e.target.value)}
+          min="0"
+          step="0.01"
+          placeholder="Enter market put price"
+          className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+      </div>
+
+      <button
+        onClick={generateRecommendations}
+        disabled={!canGenerate}
+        className={`
+          w-full px-6 py-3 rounded-xl font-semibold transition-all duration-200
+          ${canGenerate
+            ? "bg-purple-500 text-white hover:bg-purple-600"
+            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+          }
+        `}
+      >
+        Generate Recommendations
+      </button>
 
       {/* Error Message */}
       {error && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-lg bg-red-50 border border-red-200 p-4"
+          className="rounded-lg bg-red-50 border border-red-200 p-4 mt-4"
         >
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-red-800">{error}</p>
-            </div>
-          </div>
+          <p className="text-sm font-medium text-red-800">{error}</p>
         </motion.div>
       )}
 
-      {/* Recommendations */}
+      {/* Recommendations Display */}
       {showRecommendations && recommendations.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white rounded-xl border border-gray-200 p-6 shadow-lg"
+          className="mt-6 space-y-4" // Added margin-top
         >
-          <h3 className="text-xl font-semibold text-gray-800 mb-6">Trading Recommendations</h3>
-          <div className="space-y-4">
-            {recommendations.map((rec, index) => (
-              <div 
-                key={index}
-                className={`
-                  p-4 rounded-lg border-l-4 
-                  ${
-                    rec.action === 'buy' ? 'border-green-500 bg-green-50' :
-                    rec.action === 'sell' ? 'border-red-500 bg-red-50' :
-                    'border-gray-500 bg-gray-50'
-                  }
-                `}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex flex-wrap items-center gap-2"> {/* Use flex-wrap for smaller screens */}
-                    <span className="text-lg font-semibold capitalize text-gray-800">
-                      {rec.type} Option
-                    </span>
-                    <span className={`
-                      px-3 py-1 rounded-full text-sm font-medium uppercase
-                      ${rec.action === 'buy' ? 'bg-green-100 text-green-800' :
-                        rec.action === 'sell' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }
-                    `}>
-                      {rec.action}
-                    </span>
-                    <span className={`
-                      px-2 py-1 rounded text-xs font-medium
-                      ${rec.confidence === 'high' ? 'bg-blue-100 text-blue-800' :
-                        rec.confidence === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }
-                    `}>
-                      {rec.confidence} confidence
-                    </span>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className="text-sm text-gray-600">Price Difference</div>
-                    <div className={`font-bold ${rec.priceDifference > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {rec.priceDifference > 0 ? '+' : ''}${rec.priceDifference.toFixed(2)}
-                    </div>
-                  </div>
+          {recommendations.map((rec, index) => (
+            <div
+              key={index}
+              className={`
+                p-4 rounded-lg border-l-4
+                ${
+                  rec.action === 'buy' ? 'border-green-500 bg-green-50' :
+                  rec.action === 'sell' ? 'border-red-500 bg-red-50' :
+                  'border-gray-500 bg-gray-50'
+                }
+              `}
+            >
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-lg font-semibold capitalize text-gray-800">
+                    {rec.type} Option
+                  </span>
+                  <span className={`
+                    px-3 py-1 rounded-full text-sm font-medium uppercase
+                    ${rec.action === 'buy' ? 'bg-green-100 text-green-800' :
+                      rec.action === 'sell' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }
+                  `}>
+                    {rec.action}
+                  </span>
+                  <span className={`
+                    px-2 py-1 rounded text-xs font-medium
+                    ${rec.confidence === 'high' ? 'bg-blue-100 text-blue-800' :
+                      rec.confidence === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    }
+                  `}>
+                    {rec.confidence} confidence
+                  </span>
                 </div>
-                
-                <p className="text-gray-700 mb-3">{rec.reason}</p>
-                
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-600">Theoretical Price:</span>
-                    <span className="ml-2 font-medium">${rec.theoreticalPrice.toFixed(2)}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Market Price:</span>
-                    <span className="ml-2 font-medium">${rec.marketPrice.toFixed(2)}</span>
+                <div className="text-right flex-shrink-0">
+                  <div className="text-sm text-gray-600">Price Difference</div>
+                  <div className={`font-bold ${rec.priceDifference > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {rec.priceDifference > 0 ? '+' : ''}${rec.priceDifference.toFixed(2)}
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-          
+
+              <p className="text-gray-700 mb-3">
+                <span className="font-semibold italic">{rec.reason.split('.')[0]}.</span> {/* First sentence bold and italic */}
+                {rec.reason.split('.').slice(1).join('.')} {/* Rest of the reason */}
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-600">Theoretical Price:</span>
+                  <span className="ml-2 font-medium">${rec.theoreticalPrice.toFixed(2)}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Market Price:</span>
+                  <span className="ml-2 font-medium">${rec.marketPrice.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+
           <div className="mt-6 pt-4 border-t border-gray-200">
             <p className="text-sm text-gray-500 text-center">
               <span role="img" aria-label="warning">⚠️</span> These recommendations are based on theoretical Black-Scholes pricing and should not be considered as financial advice.
@@ -292,4 +297,3 @@ export default function TradingRecommendations({ result }: TradingRecommendation
     </div>
   )
 }
-

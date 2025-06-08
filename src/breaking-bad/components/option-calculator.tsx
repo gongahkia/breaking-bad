@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { calculateOption } from "../app/actions/calculate"
 import StockTicker from "./StockTicker"
 import HeatMap from "./VolatilityHeatMap"
-import TradingRecommendations from "./TradingRecommendations" // We will modify this component as well
+import TradingRecommendations from "./TradingRecommendations" // Keep this import
 import { CalculationResult, FormData, OptionInputs } from "./types"
 
 export default function OptionCalculator() {
@@ -26,13 +26,8 @@ export default function OptionCalculator() {
   })
 
   const [heatMapGenerated, setHeatMapGenerated] = useState(false)
-  const [tradingRecsGenerated, setTradingRecsGenerated] = useState(false) // This now controls only display on right
+  // Removed tradingRecsGenerated state as TradingRecommendations will manage its own display
   const [stockData, setStockData] = useState<any>(null)
-
-  // New states for market prices for trading recommendations
-  const [marketCallPrice, setMarketCallPrice] = useState<string>("")
-  const [marketPutPrice, setMarketPutPrice] = useState<string>("")
-  const [recommendations, setRecommendations] = useState<string | null>(null); // State to hold the final recommendations string/object
 
   const resultsRef = useRef<HTMLDivElement>(null)
 
@@ -72,9 +67,7 @@ export default function OptionCalculator() {
       const inputs = { stockPrice, strikePrice, interestRate, dividendYield, timeToExpiration, volatility }
       const calculationResult = await calculateOption(inputs)
       setResult(calculationResult)
-      // Reset recommendations when a new calculation is made
-      setRecommendations(null);
-      setTradingRecsGenerated(false); // Ensure the right panel recs are hidden
+      // No need to reset recommendations state here, as TradingRecommendations component manages its own.
     } catch (err) {
       setError("Failed to calculate option prices. Please check your inputs and try again.")
     } finally {
@@ -117,46 +110,6 @@ export default function OptionCalculator() {
   const handleDataUpdate = useCallback((data: { ticker: string; price: number; lastUpdate: string }) => {
     setStockData(data);
   }, []);
-
-  // New function to handle generating trading recommendations
-  const handleGenerateRecommendations = useCallback(() => {
-    if (result) {
-      const callPrice = parseFloat(marketCallPrice);
-      const putPrice = parseFloat(marketPutPrice);
-
-      let recs: string[] = [];
-
-      // Example recommendation logic (you'll replace this with your actual logic from TradingRecommendations)
-      if (!isNaN(callPrice) && result.callOptionPrice) {
-        if (callPrice < result.callOptionPrice) {
-          recs.push("Call Option: Market price is undervalued. Consider BUYING.");
-        } else if (callPrice > result.callOptionPrice) {
-          recs.push("Call Option: Market price is overvalued. Consider SELLING.");
-        } else {
-          recs.push("Call Option: Market price is in line with theoretical value.");
-        }
-      }
-
-      if (!isNaN(putPrice) && result.putOptionPrice) {
-        if (putPrice < result.putOptionPrice) {
-          recs.push("Put Option: Market price is undervalued. Consider BUYING.");
-        } else if (putPrice > result.putOptionPrice) {
-          recs.push("Put Option: Market price is overvalued. Consider SELLING.");
-        } else {
-          recs.push("Put Option: Market price is in line with theoretical value.");
-        }
-      }
-
-      if (recs.length === 0) {
-        setRecommendations("Please enter valid market prices for recommendations.");
-      } else {
-        setRecommendations(recs.join("\n")); // Join recommendations with newlines
-      }
-      setTradingRecsGenerated(true); // Trigger display on right panel
-    }
-  }, [result, marketCallPrice, marketPutPrice]); // Dependencies for useCallback
-
-  const canGenerateRecommendations = result && (!isNaN(parseFloat(marketCallPrice)) || !isNaN(parseFloat(marketPutPrice)));
 
   return (
     <div className="flex h-full gap-8 overflow-hidden">
@@ -362,54 +315,9 @@ export default function OptionCalculator() {
           </button>
         </div>
 
-        {/* Trading Recommendations (Input Section - MOVED HERE) */}
-        <div className="bg-gray-50 rounded-xl p-4">
-          <h4 className="text-lg font-semibold text-gray-800 mb-3">Trading Recommendations</h4>
-          <p className="text-sm text-gray-600 mb-4">
-            Enter current market prices to get buy/sell recommendations based on theoretical values:
-          </p>
-          <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-600 mb-2">
-              Market Call Option Price
-            </label>
-            <input
-              type="number"
-              value={marketCallPrice}
-              onChange={(e) => setMarketCallPrice(e.target.value)}
-              min="0"
-              step="0.01"
-              className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter market call price"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-600 mb-2">
-              Market Put Option Price
-            </label>
-            <input
-              type="number"
-              value={marketPutPrice}
-              onChange={(e) => setMarketPutPrice(e.target.value)}
-              min="0"
-              step="0.01"
-              className="w-full px-3 py-2 text-sm rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter market put price"
-            />
-          </div>
-          <button
-            onClick={handleGenerateRecommendations}
-            disabled={!canGenerateRecommendations}
-            className={`
-              w-full px-6 py-3 rounded-xl font-semibold transition-all duration-200
-              ${canGenerateRecommendations
-                ? "bg-purple-500 text-white hover:bg-purple-600"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-              }
-            `}
-          >
-            Generate Recommendations
-          </button>
-        </div>
+        {/* Trading Recommendations Component (Full component with inputs and output) */}
+        <TradingRecommendations result={result} />
+
       </div>
 
       {/* Right Panel - Results Card */}
@@ -456,10 +364,10 @@ export default function OptionCalculator() {
             >
               <h4 className="font-semibold text-gray-800">Option Pricing</h4>
               {[
-                { label: "Call Option Price", value: `${result.callOptionPrice?.toFixed(2)}`, color: "text-green-600" }, // Added toFixed
-                { label: "Put Option Price", value: `${result.putOptionPrice?.toFixed(2)}`, color: "text-red-600" }, // Added toFixed
-                { label: "Implied Volatility", value: `${result.impliedVolatility?.toFixed(4)}`, color: "text-blue-600" }, // Added toFixed
-                { label: "Delta", value: `${result.delta?.toFixed(4)}`, color: "text-purple-600" }, // Added toFixed
+                { label: "Call Option Price", value: `${result.callOptionPrice?.toFixed(2)}`, color: "text-green-600" },
+                { label: "Put Option Price", value: `${result.putOptionPrice?.toFixed(2)}`, color: "text-red-600" },
+                { label: "Implied Volatility", value: `${result.impliedVolatility?.toFixed(4)}`, color: "text-blue-600" },
+                { label: "Delta", value: `${result.delta?.toFixed(4)}`, color: "text-purple-600" },
               ].map(({ label, value, color }) => (
                 <div
                   key={label}
@@ -488,22 +396,8 @@ export default function OptionCalculator() {
             </motion.div>
           )}
 
-          {/* Trading Recommendations (Output Section - MOVED HERE, conditional on recommendations state) */}
-          {tradingRecsGenerated && recommendations && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm whitespace-pre-wrap" // Added whitespace-pre-wrap
-            >
-              <h4 className="font-semibold text-gray-800 mb-3">Trading Recommendations</h4>
-              <p className="text-sm text-gray-700">
-                {recommendations}
-              </p>
-            </motion.div>
-          )}
-
           {/* Empty State */}
-          {!result && !stockData && !heatMapGenerated && !tradingRecsGenerated && (
+          {!result && !stockData && !heatMapGenerated && (
             <div className="h-full flex items-center justify-center text-gray-400">
               <div className="text-center">
                 <p className="text-sm">Calculate options or fetch stock data to see results here</p>
