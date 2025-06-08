@@ -1,70 +1,71 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from "react"
-import { useForm } from "react-hook-form"
-import { motion } from "framer-motion"
-import { calculateOption } from "../app/actions/calculate"
-import StockTicker from "./StockTicker"
-import HeatMap from "./VolatilityHeatMap"
-import TradingRecommendations from "./TradingRecommendations"
-import { CalculationResult, FormData, OptionInputs, OptionRecommendation } from "./types"
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { motion } from "framer-motion";
+import { calculateOption } from "../app/actions/calculate";
+import StockTicker from "./StockTicker";
+import HeatMap from "./VolatilityHeatMap";
+import TradingRecommendations from "./TradingRecommendations";
+import { CalculationResult, FormData, OptionInputs, OptionRecommendation } from "./types"; // Ensure OptionRecommendation is imported
 
 export default function OptionCalculator() {
-  const [volatilityPercent, setVolatilityPercent] = useState(16)
-  const [interestRatePercent, setInterestRatePercent] = useState(5)
-  const [isCalculating, setIsCalculating] = useState(false)
-  const [result, setResult] = useState<CalculationResult | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [priceMode, setPriceMode] = useState<"auto" | "manual">("auto")
-  const [tickerInput, setTickerInput] = useState("AAPL")
-  const [submittedTicker, setSubmittedTicker] = useState("") // Holds the ticker for API call
-  const [autoPrice, setAutoPrice] = useState<number | null>(null) // Price fetched by StockTicker
-  const [manualPrice, setManualPrice] = useState("100") // Manually entered price
+  const [volatilityPercent, setVolatilityPercent] = useState(16);
+  const [interestRatePercent, setInterestRatePercent] = useState(5);
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [result, setResult] = useState<CalculationResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [priceMode, setPriceMode] = useState<"auto" | "manual">("manual"); // Default to manual as per previous steps
+  const [tickerInput, setTickerInput] = useState("AAPL");
+  const [submittedTicker, setSubmittedTicker] = useState(""); // Holds the ticker for API call
+  const [autoPrice, setAutoPrice] = useState<number | null>(null); // Price fetched by StockTicker
+  const [manualPrice, setManualPrice] = useState("100"); // Manually entered price
   const [formData, setFormData] = useState<FormData>({
     strikePrice: "100",
     dividendYield: "0",
-    timeToExpiration: "1"
-  })
+    timeToExpiration: "1",
+  });
 
-  const [heatMapGenerated, setHeatMapGenerated] = useState(false)
-  const [stockData, setStockData] = useState<any>(null) // Data from StockTicker
-  const [recommendations, setRecommendations] = useState<OptionRecommendation[] | null>(null); 
+  const [heatMapGenerated, setHeatMapGenerated] = useState(false);
+  const [stockData, setStockData] = useState<any>(null); // Data from StockTicker
+  const [recommendations, setRecommendations] = useState<OptionRecommendation[] | null>(null); // State to store recommendations
 
-    const {
-      register,
-      handleSubmit,
-      formState: { errors },
-      getValues,
-      setValue,
-    } = useForm<FormData>({
-      defaultValues: {
-        strikePrice: '100',
-        dividendYield: '0',
-        timeToExpiration: '1',
-      },
-    });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    getValues,
+    setValue,
+  } = useForm<FormData>({
+    defaultValues: {
+      strikePrice: '100',
+      dividendYield: '0',
+      timeToExpiration: '1',
+    },
+  });
 
-  const resultsRef = useRef<HTMLDivElement>(null)
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const handleFormDataChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   const validateInputs = useCallback((): string | null => {
-    // Determine which stock price to validate based on mode
-    const currentStockPrice = priceMode === "auto" ? autoPrice : Number(manualPrice)
+    const currentStockPrice = priceMode === "auto" ? autoPrice : Number(manualPrice);
 
-    const strikePrice = Number(formData.strikePrice)
-    const timeToExpiration = Number(formData.timeToExpiration)
-    const dividendYield = Number(formData.dividendYield)
+    const strikePrice = Number(formData.strikePrice);
+    const timeToExpiration = Number(formData.timeToExpiration);
+    const dividendYield = Number(formData.dividendYield);
+    const currentVolatilityPercent = volatilityPercent; // Use state value directly
+    const currentInterestRatePercent = interestRatePercent; // Use state value directly
 
-    if (!currentStockPrice || currentStockPrice <= 0 || isNaN(currentStockPrice)) return "Stock price must be a positive number"
-    if (!strikePrice || strikePrice <= 0 || isNaN(strikePrice)) return "Strike price must be a positive number"
-    if (!timeToExpiration || timeToExpiration <= 0 || isNaN(timeToExpiration)) return "Time to expiration must be a positive number"
-    if (dividendYield < 0 || isNaN(dividendYield)) return "Dividend yield cannot be negative"
-    if (volatilityPercent <= 0 || isNaN(volatilityPercent)) return "Volatility must be a positive number"
-    if (interestRatePercent < 0 || isNaN(interestRatePercent)) return "Risk-free rate cannot be negative"
-    return null
+    if (!currentStockPrice || currentStockPrice <= 0 || isNaN(currentStockPrice)) return "Stock price must be a positive number.";
+    if (!strikePrice || strikePrice <= 0 || isNaN(strikePrice)) return "Strike price must be a positive number.";
+    if (!timeToExpiration || timeToExpiration <= 0 || isNaN(timeToExpiration)) return "Time to expiration must be a positive number.";
+    if (dividendYield < 0 || isNaN(dividendYield)) return "Dividend yield cannot be negative.";
+    if (currentVolatilityPercent <= 0 || isNaN(currentVolatilityPercent)) return "Volatility must be a positive number.";
+    if (currentInterestRatePercent < 0 || isNaN(currentInterestRatePercent)) return "Risk-free rate cannot be negative.";
+    return null;
   }, [priceMode, autoPrice, manualPrice, formData, volatilityPercent, interestRatePercent]);
 
 
@@ -73,10 +74,16 @@ export default function OptionCalculator() {
     if (validationError) {
       setError(validationError);
       setResult(null);
+      setHeatMapGenerated(false); // Clear heat map if validation fails
+      setRecommendations(null); // Clear recommendations if validation fails
       return;
     }
     setIsCalculating(true);
     setError(null);
+    setResult(null); // Clear previous results before new calculation
+    setHeatMapGenerated(false); // Reset heat map state on new calculation
+    setRecommendations(null); // Clear previous recommendations on new calculation
+
     try {
       const stockPrice = priceMode === "auto" ? (autoPrice || 0) : Number(manualPrice);
       const strikePrice = Number(formData.strikePrice);
@@ -85,11 +92,9 @@ export default function OptionCalculator() {
       const timeToExpiration = Number(formData.timeToExpiration);
       const volatility = volatilityPercent / 100;
 
-      const inputs = { stockPrice, strikePrice, interestRate, dividendYield, timeToExpiration, volatility };
+      const inputs: OptionInputs = { stockPrice, strikePrice, interestRate, dividendYield, timeToExpiration, volatility };
 
-      // --- ADD THIS CONSOLE.LOG ---
       console.log("Inputs being sent to calculateOption:", inputs);
-      // --- END ADDITION ---
 
       const calculationResult = await calculateOption(inputs);
       setResult(calculationResult);
@@ -108,35 +113,30 @@ export default function OptionCalculator() {
       setSubmittedTicker(""); // Clear submitted ticker when switching to manual mode
       setAutoPrice(null); // Clear auto price
       setStockData(null); // Clear stock data
-    } else {
-      // When switching to auto, ensure tickerInput is reset if needed or fetch immediately
-      // If you want to automatically fetch the default ticker on mode switch, uncomment:
-      // if (tickerInput.trim() && submittedTicker !== tickerInput.trim()) {
-      //   setSubmittedTicker(tickerInput.trim());
-      // }
     }
     // Always clear calculation results and recommendations when mode changes
     setResult(null);
     setHeatMapGenerated(false);
+    setRecommendations(null); // Clear recommendations when mode changes
     setError(null);
   }, [priceMode]); // Dependency on priceMode
 
   const handleTickerSubmit = () => {
     if (tickerInput.trim()) {
-      setSubmittedTicker(tickerInput.trim())
+      setSubmittedTicker(tickerInput.trim());
       setAutoPrice(null); // Clear previous auto price before new fetch
       setStockData(null); // Clear previous stock data before new fetch
       setError(null); // Clear any old errors
     }
-  }
+  };
 
   // canCalculate should consider the selected price mode and its corresponding price
   const canCalculate = priceMode === "manual"
     ? !isNaN(Number(manualPrice)) && Number(manualPrice) > 0 // Manual mode: manualPrice must be a valid positive number
-    : autoPrice !== null && autoPrice > 0; // Auto mode: autoPrice must be set and positive
+    : autoPrice !== null && autoPrice > 0 && submittedTicker !== ""; // Auto mode: autoPrice must be set and positive, and a ticker submitted
 
   const getOptionInputs = useCallback((): OptionInputs => {
-    const stockPrice = priceMode === "auto" ? (autoPrice || 0) : Number(manualPrice)
+    const stockPrice = priceMode === "auto" ? (autoPrice || 0) : Number(manualPrice);
     return {
       stockPrice,
       strikePrice: Number(formData.strikePrice),
@@ -144,14 +144,14 @@ export default function OptionCalculator() {
       dividendYield: Number(formData.dividendYield),
       timeToExpiration: Number(formData.timeToExpiration),
       volatility: volatilityPercent / 100,
-    }
+    };
   }, [priceMode, autoPrice, manualPrice, formData, interestRatePercent, volatilityPercent]);
 
   useEffect(() => {
     if (result && resultsRef.current) {
-      resultsRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+      resultsRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [result])
+  }, [result]);
 
   const handlePriceUpdate = useCallback((price: number) => {
     setAutoPrice(price);
@@ -161,10 +161,15 @@ export default function OptionCalculator() {
     setStockData(data);
   }, []);
 
+  // New callback to receive recommendations from TradingRecommendations
+  const handleRecommendationsGenerated = useCallback((generatedRecs: OptionRecommendation[]) => {
+    setRecommendations(generatedRecs);
+  }, []);
+
   return (
-    <div className="flex h-full gap-8 overflow-hidden">
-      {/* Left Panel - Input Form */}
-      <div className="flex-1 overflow-y-auto pr-4 space-y-6">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-100 text-gray-800">
+      {/* Left Card - Input Form */}
+      <div className="lg:w-1/2 p-6 space-y-6 bg-white shadow-lg rounded-lg m-4">
         {/* Mode Toggle */}
         <div className="flex items-center justify-center gap-8">
           {[
@@ -327,7 +332,7 @@ export default function OptionCalculator() {
         <div className="flex justify-center">
           <button
             onClick={handleCalculate}
-            disabled={isCalculating || !canCalculate || validateInputs() !== null} // Added validateInputs to disabled
+            disabled={isCalculating || !canCalculate || validateInputs() !== null}
             className={`
               px-8 py-3 rounded-xl font-semibold shadow-lg transition-all duration-200
               ${canCalculate && !isCalculating && validateInputs() === null
@@ -365,21 +370,30 @@ export default function OptionCalculator() {
           </button>
         </div>
 
-        {/* Trading Recommendations Component */}
-        <TradingRecommendations result={result} />
+        {/* Trading Recommendations Component - Stays on the left for inputs */}
+        <section className="space-y-4">
+            <h2 className="text-xl font-semibold border-b pb-2">Trading Recommendations Input</h2>
+            <p className="text-sm text-gray-600">
+                Enter current market prices to get buy/sell recommendations based on theoretical values.
+            </p>
+            <TradingRecommendations
+                result={result} // Pass the calculated result to TradingRecommendations
+                onGenerateRecommendations={handleRecommendationsGenerated} // Pass the new callback
+            />
+        </section>
 
       </div>
 
       {/* Right Panel - Results Card */}
       <div
         ref={resultsRef}
-        className="w-96 bg-gray-50 rounded-2xl border border-gray-200 p-6 overflow-y-auto flex-shrink-0"
+        className="lg:w-1/2 p-6 space-y-6 bg-white shadow-lg rounded-lg m-4 overflow-y-auto flex-shrink-0"
       >
         <div className="space-y-6">
-          <h3 className="text-xl font-bold text-gray-800">Results</h3>
+          <h3 className="text-2xl font-bold text-gray-800 mb-4">Results</h3>
 
           {/* Stock Ticker (Hidden) - Only for data fetching when in auto mode */}
-          {priceMode === "auto" && submittedTicker && ( // <-- Only render StockTicker in auto mode with a submitted ticker
+          {priceMode === "auto" && submittedTicker && (
             <div style={{ display: 'none' }}>
               <StockTicker
                 ticker={submittedTicker}
@@ -425,7 +439,9 @@ export default function OptionCalculator() {
                 >
                   <span className="text-gray-700 font-medium">{label}</span>
                   <span className={`font-bold ${color}`}>
+                    {/* Check for null explicitly for display */}
                     {typeof value === 'number' && value !== null ? value.toFixed(4) : 'N/A'}
+                    {label === "Implied Volatility" && typeof value === 'number' && value !== null ? '%' : ''} {/* Add % for IV */}
                   </span>
                 </div>
               ))}
@@ -440,16 +456,50 @@ export default function OptionCalculator() {
               className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"
             >
               <h4 className="font-semibold text-gray-800 mb-3">Volatility Heat Map</h4>
+              {/* HeatMap component itself will handle rendering logic based on its props */}
               <HeatMap
                 optionInputs={getOptionInputs()}
-                canGenerate={true}
-                displayOnly={true}
+                canGenerate={true} // Assuming true here means data can be generated and displayed
+                displayOnly={true} // Tells HeatMap to only display, not generate a button
               />
             </motion.div>
           )}
 
+          {/* NEW: Trading Recommendations & Analysis Section */}
+          {recommendations && recommendations.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm space-y-4"
+            >
+              <h4 className="font-semibold text-gray-800 mb-2">Trading Recommendations & Analysis</h4>
+              {recommendations.map((rec, index) => (
+                <div key={index} className="border p-3 rounded-md shadow-sm bg-gray-50">
+                  <p>
+                    <strong>{rec.type === 'call' ? 'Call Option' : 'Put Option'} {rec.action.toUpperCase()}</strong>
+                    <span className={`ml-2 px-2 py-1 rounded-full text-xs font-semibold ${
+                      rec.confidence === 'high' ? 'bg-green-200 text-green-800' :
+                      rec.confidence === 'medium' ? 'bg-yellow-200 text-yellow-800' :
+                      'bg-red-200 text-red-800'
+                    }`}>
+                      {rec.confidence.toUpperCase()}
+                    </span>
+                  </p>
+                  <p className="text-sm mt-1">{rec.reason}</p>
+                  <p className="text-xs text-gray-600 mt-2">
+                    Theoretical Price: ${rec.theoreticalPrice.toFixed(2)} | Market Price: ${rec.marketPrice.toFixed(2)} | Difference: ${rec.priceDifference.toFixed(2)}
+                  </p>
+                </div>
+              ))}
+              <p className="text-xs text-gray-500 mt-4">
+                <strong className="text-red-600">Disclaimer:</strong> These recommendations are based on theoretical Black-Scholes pricing and should not be considered as financial advice. Always conduct your own research and consider market conditions, liquidity, and risk tolerance before trading.
+              </p>
+            </motion.div>
+          )}
+
+
           {/* Empty State */}
-          {!result && !stockData && !heatMapGenerated && (
+          {!result && !stockData && !heatMapGenerated && !recommendations && (
             <div className="h-full flex items-center justify-center text-gray-400">
               <div className="text-center">
                 <p className="text-sm">Calculate options or fetch stock data to see results here</p>
@@ -460,5 +510,5 @@ export default function OptionCalculator() {
         </div>
       </div>
     </div>
-  )
+  );
 }
