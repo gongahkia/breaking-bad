@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react" // Add useEffect import
+import { useState, useCallback, useEffect } from "react"
 import { motion } from "framer-motion"
-import { CalculationResult, OptionRecommendation } from "./types" // Ensure OptionRecommendation is correctly typed
+import { CalculationResult, OptionRecommendation } from "./types"
 
 interface TradingRecommendationsProps {
   result: CalculationResult | null
@@ -35,8 +35,8 @@ export default function TradingRecommendations({ result }: TradingRecommendation
     }
 
     // Validate market prices
-    const theoreticalCall = parseFloat(result.callOptionPrice.toString()); // Ensure string for parseFloat
-    const theoreticalPut = parseFloat(result.putOptionPrice.toString());   // Ensure string for parseFloat
+    const theoreticalCall = parseFloat(result.callOptionPrice.toString());
+    const theoreticalPut = parseFloat(result.putOptionPrice.toString());
     const marketCall = parseFloat(marketCallPrice);
     const marketPut = parseFloat(marketPutPrice);
 
@@ -52,7 +52,7 @@ export default function TradingRecommendations({ result }: TradingRecommendation
 
     // Call option recommendation
     const callDifference = theoreticalCall - marketCall
-    const callPercentDiff = marketCall === 0 ? 0 : Math.abs(callDifference) / marketCall * 100 // Handle division by zero
+    const callPercentDiff = marketCall === 0 ? 0 : Math.abs(callDifference) / marketCall * 100
 
     let callAction: 'buy' | 'sell' | 'hold' = 'hold'
     let callConfidence: 'high' | 'medium' | 'low' = 'low'
@@ -82,9 +82,10 @@ export default function TradingRecommendations({ result }: TradingRecommendation
       } else {
         callReason = `Call is fairly valued. Price difference is only ${callPercentDiff.toFixed(1)}%.`
       }
-    } else { // Exactly zero difference
+    } else {
        callReason = `Call is exactly valued. Price difference is 0%.`
     }
+
 
     newRecommendations.push({
       type: 'call',
@@ -98,7 +99,7 @@ export default function TradingRecommendations({ result }: TradingRecommendation
 
     // Put option recommendation
     const putDifference = theoreticalPut - marketPut
-    const putPercentDiff = marketPut === 0 ? 0 : Math.abs(putDifference) / marketPut * 100 // Handle division by zero
+    const putPercentDiff = marketPut === 0 ? 0 : Math.abs(putDifference) / marketPut * 100
 
     let putAction: 'buy' | 'sell' | 'hold' = 'hold'
     let putConfidence: 'high' | 'medium' | 'low' = 'low'
@@ -128,7 +129,7 @@ export default function TradingRecommendations({ result }: TradingRecommendation
       } else {
         putReason = `Put is fairly valued. Price difference is only ${putPercentDiff.toFixed(1)}%.`
       }
-    } else { // Exactly zero difference
+    } else {
       putReason = `Put is exactly valued. Price difference is 0%.`
     }
 
@@ -144,14 +145,14 @@ export default function TradingRecommendations({ result }: TradingRecommendation
 
     setRecommendations(newRecommendations)
     setShowRecommendations(true)
-  }, [result, marketCallPrice, marketPutPrice]); // Dependencies for useCallback
+  }, [result, marketCallPrice, marketPutPrice]);
+
 
   // Determine if the button should be enabled
-  // It requires result to be present AND theoretical prices to be numbers
-  // AND market prices to be numbers >= 0
-  const canGenerate = result &&
-                      result.callOptionPrice !== null && result.callOptionPrice !== undefined &&
-                      result.putOptionPrice !== null && result.putOptionPrice !== undefined &&
+  // This needs to be carefully constructed to avoid accessing properties of null 'result'
+  const canGenerate = result && // Ensure result is not null
+                      typeof result.callOptionPrice === 'number' && result.callOptionPrice !== null && // Ensure it's a number and not null
+                      typeof result.putOptionPrice === 'number' && result.putOptionPrice !== null &&   // Ensure it's a number and not null
                       !isNaN(parseFloat(marketCallPrice)) && parseFloat(marketCallPrice) >= 0 &&
                       !isNaN(parseFloat(marketPutPrice)) && parseFloat(marketPutPrice) >= 0;
 
