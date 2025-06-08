@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import { useForm } from "react-hook-form"
 import { motion } from "framer-motion"
 import { calculateOption } from "../app/actions/calculate"
 import StockTicker from "./StockTicker"
 import HeatMap from "./VolatilityHeatMap"
 import TradingRecommendations from "./TradingRecommendations"
-import { CalculationResult, FormData, OptionInputs } from "./types"
+import { CalculationResult, FormData, OptionInputs, OptionRecommendation } from "./types"
 
 export default function OptionCalculator() {
   const [volatilityPercent, setVolatilityPercent] = useState(16)
@@ -27,6 +28,21 @@ export default function OptionCalculator() {
 
   const [heatMapGenerated, setHeatMapGenerated] = useState(false)
   const [stockData, setStockData] = useState<any>(null) // Data from StockTicker
+  const [recommendations, setRecommendations] = useState<OptionRecommendation[] | null>(null); 
+
+    const {
+      register,
+      handleSubmit,
+      formState: { errors },
+      getValues,
+      setValue,
+    } = useForm<FormData>({
+      defaultValues: {
+        strikePrice: '100',
+        dividendYield: '0',
+        timeToExpiration: '1',
+      },
+    });
 
   const resultsRef = useRef<HTMLDivElement>(null)
 
