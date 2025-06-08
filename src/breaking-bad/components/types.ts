@@ -42,3 +42,9 @@ export interface OptionInputs {
   timeToExpiration: number;
   volatility: number;
 }
+
+export interface StockData {
+  ticker: string;
+  price: number;
+  lastUpdate: string; 
+}
