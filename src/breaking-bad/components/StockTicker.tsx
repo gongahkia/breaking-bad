@@ -13,67 +13,66 @@ interface StockData {
 interface StockTickerProps {
   ticker: string
   onPriceUpdate?: (price: number) => void
+  onDataUpdate?: (data: { ticker: string; price: number; lastUpdate: string }) => void
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 const isValidTicker = (ticker: string) => /^[A-Z]{1,5}$/.test(ticker)
 
-export default function StockTicker({ ticker, onPriceUpdate }: StockTickerProps) {
+export default function StockTicker({ ticker, onPriceUpdate, onDataUpdate }: StockTickerProps) {
   const shouldFetch = isValidTicker(ticker)
   const { data, error, isLoading } = useSWR(shouldFetch ? `/api/stock?ticker=${ticker}` : null, fetcher, {
     dedupingInterval: 60000,
   })
 
-  // State for loading bar progress
   const [loadingProgress, setLoadingProgress] = useState(0)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Simulate loading progress
   useEffect(() => {
-    setLoadingProgress(0) // Reset progress on new ticker
+    setLoadingProgress(0)
     if (isLoading) {
       intervalRef.current = setInterval(() => {
         setLoadingProgress((prevProgress) => {
           const newProgress = prevProgress + 5
-          return newProgress > 90 ? 90 : newProgress // Cap at 90%
+          return newProgress > 90 ? 90 : newProgress
         })
       }, 100)
     } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-      setLoadingProgress(100) // Set to 100% when loading is done
+      intervalRef.current && clearInterval(intervalRef.current)
+      setLoadingProgress(100)
     }
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
+      intervalRef.current && clearInterval(intervalRef.current)
     }
   }, [isLoading])
 
-  // Handle loading progress when data is loaded
   useEffect(() => {
     if (!isLoading && data && data["05. price"]) {
-      setLoadingProgress(100) // Ensure it's 100% when data is loaded
+      setLoadingProgress(100)
     }
   }, [data, isLoading])
 
-  // Notify the parent component with the auto-fetched price when it changes
   useEffect(() => {
     if (data && data["05. price"] && onPriceUpdate) {
       const price = Number.parseFloat(data["05. price"])
       if (!isNaN(price)) {
         onPriceUpdate(price)
+        
+        // Send data to parent for right panel display
+        onDataUpdate?.({
+          ticker: data["01. symbol"] || ticker,
+          price,
+          lastUpdate: data["07. latest trading day"] || new Date().toLocaleString()
+        })
       }
     }
-  }, [data, onPriceUpdate])
+  }, [data, onPriceUpdate, onDataUpdate, ticker])
 
   if (!shouldFetch) {
     return (
-      <div className="text-red-500 font-medium p-3 rounded-lg bg-red-50 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.05),inset_-2px_-2px_5px_rgba(255,255,255,0.5)]">
+      <div className="text-red-500 font-medium p-3 rounded-lg bg-red-50">
         Please enter a valid ticker symbol.
       </div>
     )
@@ -81,7 +80,7 @@ export default function StockTicker({ ticker, onPriceUpdate }: StockTickerProps)
 
   if (error) {
     return (
-      <div className="text-red-500 font-medium p-3 rounded-lg bg-red-50 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.05),inset_-2px_-2px_5px_rgba(255,255,255,0.5)]">
+      <div className="text-red-500 font-medium p-3 rounded-lg bg-red-50">
         Error fetching data for {ticker}.
       </div>
     )
@@ -89,19 +88,18 @@ export default function StockTicker({ ticker, onPriceUpdate }: StockTickerProps)
 
   return (
     <div>
-      {/* Loading Bar */}
       {(isLoading || loadingProgress < 100) && (
         <div className="mb-4">
           <div className="flex justify-between text-xs text-gray-500 mb-1">
             <span>Fetching {ticker} data...</span>
             <span>{loadingProgress}%</span>
           </div>
-          <div className="h-3 rounded-full bg-gray-200 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.05),inset_-2px_-2px_5px_rgba(255,255,255,0.5)] overflow-hidden">
+          <div className="h-3 rounded-full bg-gray-200 overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${loadingProgress}%` }}
               transition={{ type: "spring", stiffness: 50 }}
-              className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full shadow-[1px_1px_3px_rgba(0,0,0,0.1)]"
+              className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full"
             />
           </div>
         </div>
