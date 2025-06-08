@@ -1,146 +1,147 @@
-"use client"
+// components/VolatilityHeatMap.tsx (formerly HeatMap.tsx)
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { OptionInputs } from "./types"
+import { motion } from "framer-motion";
+import { HeatMapData, OptionInputs } from "./types"; // OptionInputs might not be directly used here anymore for rendering
 
 interface HeatMapProps {
-  optionInputs: OptionInputs
-  canGenerate?: boolean
-  displayOnly?: boolean
+  heatMapData: HeatMapData[]; // Now receives data directly
+  // Removed canGenerate, as generation logic moves to parent
+  // Removed displayOnly, as this component is now always for display
 }
 
-const volatilityLevels = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+export default function HeatMap({ heatMapData }: HeatMapProps) {
+  // Color scale for heat map - keeping the same logic, it's pretty good!
+  const getHeatMapColor = (value: number, min: number, max: number) => {
+    if (min === max) return `hsl(0, 0%, 90%)`; // Handle flat data to avoid division by zero
+    const normalized = (value - min) / (max - min);
+    // Using a more vibrant and distinct color range, e.g., yellow to red
+    // For call/put prices, higher is often 'more expensive' so red is good for high values.
+    // HSL: Hue (0-360), Saturation (0-100%), Lightness (0-100%)
+    // Let's go from a cool blue/green for low to warm red for high
+    const hue = (1 - normalized) * 120; // 120 (green) to 0 (red)
+    return `hsl(${hue}, 80%, 45%)`;
+  };
 
-export default function HeatMap({ optionInputs, canGenerate = false, displayOnly = false }: HeatMapProps) {
-  const [heatMapData, setHeatMapData] = useState<{ volatility: number; value: number }[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  // Delta color scale (can be different, e.g., diverging for positive/negative delta)
+  const getDeltaColor = (delta: number, maxAbsDelta: number) => {
+    if (maxAbsDelta === 0) return `hsl(0, 0%, 90%)`;
 
-  // Original delta calculation logic preserved
-  const calculateDelta = (volatility: number) => {
-    const { stockPrice, strikePrice } = optionInputs
-    const moneyness = Math.abs(stockPrice - strikePrice)
-    return moneyness * (volatility / 100) * (stockPrice > strikePrice ? 1 : -1)
+    // Normalize delta from -maxAbsDelta to +maxAbsDelta to a 0-1 range
+    const normalized = (delta + maxAbsDelta) / (2 * maxAbsDelta);
+
+    // Using a diverging color scale: blue for negative, green for neutral, red for positive
+    // You can adjust these hues.
+    // Example: Blue (240) -> White/Gray (~60-90) -> Red (0)
+    let hue;
+    if (delta < 0) {
+      hue = 240 - (normalized * 120); // Blue towards more neutral
+    } else {
+      hue = (1 - normalized) * 120; // Neutral towards red
+    }
+    // Clamp hue to valid range [0, 240] for safe HSL
+    hue = Math.max(0, Math.min(240, hue));
+
+    return `hsl(${hue}, 70%, 50%)`;
+  };
+
+
+  if (!heatMapData || heatMapData.length === 0) {
+    return (
+      <div className="text-center text-gray-500 py-8">
+        <p>No heat map data available. Generate it using the button on the left.</p>
+      </div>
+    );
   }
 
-  const generateHeatMap = () => {
-    if (!displayOnly && !canGenerate) return
-    
-    setIsLoading(true)
-    const newData = volatilityLevels.map(vol => ({
-      volatility: vol,
-      value: calculateDelta(vol)
-    }))
-    
-    setTimeout(() => {
-      setHeatMapData(newData)
-      setIsLoading(false)
-    }, 300)
-  }
-
-  useEffect(() => {
-    if (displayOnly) generateHeatMap()
-  }, [optionInputs, displayOnly])
+  // Calculate min/max for color scaling
+  const maxCallPrice = Math.max(...heatMapData.map(d => d.callPrice));
+  const minCallPrice = Math.min(...heatMapData.map(d => d.callPrice));
+  const maxPutPrice = Math.max(...heatMapData.map(d => d.putPrice));
+  const minPutPrice = Math.min(...heatMapData.map(d => d.putPrice));
+  const maxAbsDelta = Math.max(...heatMapData.map(d => Math.abs(d.delta)));
 
   return (
-    <div className="space-y-6">
-      {!displayOnly && (
-        <div className="mb-6">
-          <button
-            onClick={generateHeatMap}
-            disabled={!canGenerate || isLoading}
-            className={`
-              w-full px-6 py-3 rounded-xl font-semibold transition-all
-              ${canGenerate && !isLoading 
-                ? "bg-blue-600 text-white hover:bg-blue-700 shadow-lg" 
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"}
-            `}
-          >
-            {isLoading ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                </svg>
-                Generating...
-              </span>
-            ) : (
-              "Generate Volatility Sensitivity Map"
-            )}
-          </button>
-        </div>
-      )}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="bg-white rounded-xl border border-gray-200 p-6 shadow-lg"
+    >
+      <h3 className="text-xl font-semibold text-gray-800 mb-6">Volatility Sensitivity Heat Map</h3>
 
-      <div className="relative">
-        <div className="grid grid-cols-1 gap-4">
-          {heatMapData.map((data, index) => {
-            const isPositive = data.value >= 0
-            const barWidth = Math.min(Math.abs(data.value) * 2, 100) // Scale for visibility
-            
-            return (
-              <motion.div 
-                key={data.volatility}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="space-y-2"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700 w-20">
-                    {data.volatility}% Vol
-                  </span>
-                  
-                  <div className="flex-1 ml-4">
-                    <div className="h-8 rounded-lg bg-gray-100 overflow-hidden shadow-inner">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${barWidth}%` }}
-                        transition={{ duration: 0.8 }}
-                        className={`
-                          h-full rounded-lg 
-                          ${isPositive 
-                            ? 'bg-gradient-to-r from-green-400 to-green-600' 
-                            : 'bg-gradient-to-r from-red-400 to-red-600'}
-                        `}
-                      />
-                    </div>
-                  </div>
-                  
-                  <span className={`ml-4 w-24 text-right font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                    {isPositive ? '+' : ''}{data.value.toFixed(2)}
-                  </span>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Call Options Heat Map Table */}
+        <div>
+          <h4 className="text-lg font-medium text-gray-700 mb-4">Call Option Prices ($)</h4>
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="grid grid-cols-3 bg-gray-100 text-sm font-semibold text-gray-700 p-2 border-b border-gray-200">
+              <div className="text-center">Volatility</div>
+              <div className="text-center">Price</div>
+              <div className="text-center">Delta</div>
+            </div>
+            {heatMapData.map((data, index) => (
+              <div key={index} className="grid grid-cols-3 text-sm p-2 border-b border-gray-100 last:border-b-0">
+                <div className="text-center text-gray-600 font-medium">{data.volatility}%</div>
+                <div
+                  className="p-1 text-center font-bold rounded-sm mx-1"
+                  style={{ backgroundColor: getHeatMapColor(data.callPrice, minCallPrice, maxCallPrice) }}
+                >
+                  ${data.callPrice.toFixed(2)}
                 </div>
-                
-                <div className="text-xs text-gray-500 ml-24">
-                  {isPositive ? 'Positive' : 'Negative'} delta exposure
+                <div
+                  className="p-1 text-center font-bold rounded-sm mx-1"
+                  style={{ backgroundColor: getDeltaColor(data.delta, maxAbsDelta) }}
+                >
+                  {data.delta.toFixed(3)}
                 </div>
-              </motion.div>
-            )
-          })}
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 flex justify-between text-xs text-gray-500 px-2">
+            <span>Min Price: ${minCallPrice.toFixed(2)}</span>
+            <span>Max Price: ${maxCallPrice.toFixed(2)}</span>
+          </div>
         </div>
 
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Grid lines */}
-          <div className="h-full w-full bg-gradient-to-r from-transparent via-gray-200/50 to-transparent opacity-25" 
-               style={{ width: 'calc(100% - 8rem)', marginLeft: '6rem' }} />
+        {/* Put Options Heat Map Table */}
+        <div>
+          <h4 className="text-lg font-medium text-gray-700 mb-4">Put Option Prices ($)</h4>
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="grid grid-cols-3 bg-gray-100 text-sm font-semibold text-gray-700 p-2 border-b border-gray-200">
+              <div className="text-center">Volatility</div>
+              <div className="text-center">Price</div>
+              <div className="text-center">Delta</div>
+            </div>
+            {heatMapData.map((data, index) => (
+              <div key={index} className="grid grid-cols-3 text-sm p-2 border-b border-gray-100 last:border-b-0">
+                <div className="text-center text-gray-600 font-medium">{data.volatility}%</div>
+                <div
+                  className="p-1 text-center font-bold rounded-sm mx-1"
+                  style={{ backgroundColor: getHeatMapColor(data.putPrice, minPutPrice, maxPutPrice) }}
+                >
+                  ${data.putPrice.toFixed(2)}
+                </div>
+                <div
+                  className="p-1 text-center font-bold rounded-sm mx-1"
+                  style={{ backgroundColor: getDeltaColor(data.delta, maxAbsDelta) }}
+                >
+                  {data.delta.toFixed(3)}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 flex justify-between text-xs text-gray-500 px-2">
+            <span>Min Price: ${minPutPrice.toFixed(2)}</span>
+            <span>Max Price: ${maxPutPrice.toFixed(2)}</span>
+          </div>
         </div>
       </div>
 
-      {!displayOnly && heatMapData.length > 0 && (
-        <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
-          <h4 className="text-sm font-semibold text-blue-800 mb-2">Interpretation Guide</h4>
-          <div className="grid grid-cols-2 gap-4 text-sm text-blue-700">
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-green-500 rounded mr-2"/>
-              <span>Positive Delta (Long Exposure)</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-red-500 rounded mr-2"/>
-              <span>Negative Delta (Short Exposure)</span>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
+      <div className="mt-6 pt-4 border-t border-gray-200 text-center text-sm text-gray-500">
+        <p>This heat map illustrates how theoretical option prices and delta sensitivity change across a range of volatilities.</p>
+        <p>Colors indicate relative value: warmer colors for higher prices/more extreme delta, cooler for lower/more neutral.</p>
+      </div>
+    </motion.div>
+  );
 }
