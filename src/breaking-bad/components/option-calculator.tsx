@@ -1,3 +1,4 @@
+// components/option-calculator.tsx
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -5,9 +6,9 @@ import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { calculateOption } from "../app/actions/calculate";
 import StockTicker from "./StockTicker";
-import HeatMap from "./VolatilityHeatMap";
+import HeatMap from "./VolatilityHeatMap"; // Ensure this is the correct path to the modified file
 import TradingRecommendations from "./TradingRecommendations";
-import { CalculationResult, FormData, OptionInputs, OptionRecommendation } from "./types"; // Ensure OptionRecommendation is imported
+import { CalculationResult, FormData, OptionInputs, OptionRecommendation, HeatMapData } from "./types"; // Import HeatMapData
 
 export default function OptionCalculator() {
   const [volatilityPercent, setVolatilityPercent] = useState(16);
@@ -15,20 +16,23 @@ export default function OptionCalculator() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [priceMode, setPriceMode] = useState<"auto" | "manual">("manual"); // Default to manual as per previous steps
+  const [priceMode, setPriceMode] = useState<"auto" | "manual">("manual");
   const [tickerInput, setTickerInput] = useState("AAPL");
-  const [submittedTicker, setSubmittedTicker] = useState(""); // Holds the ticker for API call
-  const [autoPrice, setAutoPrice] = useState<number | null>(null); // Price fetched by StockTicker
-  const [manualPrice, setManualPrice] = useState("100"); // Manually entered price
+  const [submittedTicker, setSubmittedTicker] = useState("");
+  const [autoPrice, setAutoPrice] = useState<number | null>(null);
+  const [manualPrice, setManualPrice] = useState("100");
   const [formData, setFormData] = useState<FormData>({
     strikePrice: "100",
     dividendYield: "0",
     timeToExpiration: "1",
   });
 
-  const [heatMapGenerated, setHeatMapGenerated] = useState(false);
-  const [stockData, setStockData] = useState<any>(null); // Data from StockTicker
-  const [recommendations, setRecommendations] = useState<OptionRecommendation[] | null>(null); // State to store recommendations
+  // Heatmap related states (moved from HeatMap.tsx)
+  const [heatMapData, setHeatMapData] = useState<HeatMapData[]>([]); // To store the generated heat map data
+  const [isGeneratingHeatMap, setIsGeneratingHeatMap] = useState(false); // To track heat map generation
+  const [heatMapError, setHeatMapError] = useState<string | null>(null); // For heatmap specific errors
+
+  const [recommendations, setRecommendations] = useState<OptionRecommendation[] | null>(null);
 
   const {
     register,
@@ -56,8 +60,8 @@ export default function OptionCalculator() {
     const strikePrice = Number(formData.strikePrice);
     const timeToExpiration = Number(formData.timeToExpiration);
     const dividendYield = Number(formData.dividendYield);
-    const currentVolatilityPercent = volatilityPercent; // Use state value directly
-    const currentInterestRatePercent = interestRatePercent; // Use state value directly
+    const currentVolatilityPercent = volatilityPercent;
+    const currentInterestRatePercent = interestRatePercent;
 
     if (!currentStockPrice || currentStockPrice <= 0 || isNaN(currentStockPrice)) return "Stock price must be a positive number.";
     if (!strikePrice || strikePrice <= 0 || isNaN(strikePrice)) return "Strike price must be a positive number.";
@@ -74,14 +78,14 @@ export default function OptionCalculator() {
     if (validationError) {
       setError(validationError);
       setResult(null);
-      setHeatMapGenerated(false); // Clear heat map if validation fails
+      setHeatMapData([]); // Clear heat map data if validation fails
       setRecommendations(null); // Clear recommendations if validation fails
       return;
     }
     setIsCalculating(true);
     setError(null);
     setResult(null); // Clear previous results before new calculation
-    setHeatMapGenerated(false); // Reset heat map state on new calculation
+    setHeatMapData([]); // Clear heat map data on new calculation
     setRecommendations(null); // Clear previous recommendations on new calculation
 
     try {
@@ -110,30 +114,29 @@ export default function OptionCalculator() {
   // Effect to manage mode changes
   useEffect(() => {
     if (priceMode === "manual") {
-      setSubmittedTicker(""); // Clear submitted ticker when switching to manual mode
-      setAutoPrice(null); // Clear auto price
-      setStockData(null); // Clear stock data
+      setSubmittedTicker("");
+      setAutoPrice(null);
+      setStockData(null);
     }
-    // Always clear calculation results and recommendations when mode changes
     setResult(null);
-    setHeatMapGenerated(false);
-    setRecommendations(null); // Clear recommendations when mode changes
+    setHeatMapData([]); // Clear heat map data when mode changes
+    setRecommendations(null);
     setError(null);
-  }, [priceMode]); // Dependency on priceMode
+    setHeatMapError(null); // Clear heatmap specific error
+  }, [priceMode]);
 
   const handleTickerSubmit = () => {
     if (tickerInput.trim()) {
       setSubmittedTicker(tickerInput.trim());
-      setAutoPrice(null); // Clear previous auto price before new fetch
-      setStockData(null); // Clear previous stock data before new fetch
-      setError(null); // Clear any old errors
+      setAutoPrice(null);
+      setStockData(null);
+      setError(null);
     }
   };
 
-  // canCalculate should consider the selected price mode and its corresponding price
   const canCalculate = priceMode === "manual"
-    ? !isNaN(Number(manualPrice)) && Number(manualPrice) > 0 // Manual mode: manualPrice must be a valid positive number
-    : autoPrice !== null && autoPrice > 0 && submittedTicker !== ""; // Auto mode: autoPrice must be set and positive, and a ticker submitted
+    ? !isNaN(Number(manualPrice)) && Number(manualPrice) > 0
+    : autoPrice !== null && autoPrice > 0 && submittedTicker !== "";
 
   const getOptionInputs = useCallback((): OptionInputs => {
     const stockPrice = priceMode === "auto" ? (autoPrice || 0) : Number(manualPrice);
@@ -143,15 +146,71 @@ export default function OptionCalculator() {
       interestRate: interestRatePercent / 100,
       dividendYield: Number(formData.dividendYield),
       timeToExpiration: Number(formData.timeToExpiration),
-      volatility: volatilityPercent / 100,
+      volatility: volatilityPercent / 100, // This will be overwritten during heatmap generation
     };
   }, [priceMode, autoPrice, manualPrice, formData, interestRatePercent, volatilityPercent]);
 
+  // NEW: Heat map generation logic (moved from VolatilityHeatMap.tsx)
+  const generateHeatMap = async () => {
+    const validationError = validateInputs(); // Validate all core inputs first
+    if (validationError) {
+      setHeatMapError(validationError); // Set error specific to heatmap generation
+      setHeatMapData([]); // Clear old heatmap data
+      return;
+    }
+
+    setIsGeneratingHeatMap(true);
+    setHeatMapError(null); // Clear previous errors
+
+    try {
+      const heatMapResults: HeatMapData[] = [];
+      const baseInputs = getOptionInputs(); // Get current valid inputs
+
+      // Generate data for volatility range 5% to 50%
+      for (let vol = 5; vol <= 50; vol += 2.5) {
+        const inputs = {
+          ...baseInputs,
+          volatility: vol / 100, // Override volatility for each iteration
+        };
+
+        const calculationResult = await calculateOption(inputs);
+
+        // Ensure numbers are parsed safely and handle potential nulls from calculationResult
+        const callPrice = typeof calculationResult.callOptionPrice === 'number' ? calculationResult.callOptionPrice : NaN;
+        const putPrice = typeof calculationResult.putOptionPrice === 'number' ? calculationResult.putOptionPrice : NaN;
+        const delta = typeof calculationResult.delta === 'number' ? calculationResult.delta : NaN;
+
+
+        // Only push if prices are valid numbers, otherwise this point in heatmap might be invalid
+        if (!isNaN(callPrice) && !isNaN(putPrice) && !isNaN(delta)) {
+          heatMapResults.push({
+            volatility: vol,
+            callPrice: callPrice,
+            putPrice: putPrice,
+            delta: delta,
+          });
+        } else {
+             // Optionally, log an error or handle cases where a specific calculation fails
+            console.warn(`Skipping heatmap point for volatility ${vol}% due to invalid calculation results.`);
+        }
+      }
+
+      setHeatMapData(heatMapResults);
+    } catch (err) {
+      console.error("Failed to generate heat map:", err);
+      setHeatMapError("Failed to generate heat map. Please check your inputs and try again.");
+      setHeatMapData([]); // Clear data on error
+    } finally {
+      setIsGeneratingHeatMap(false);
+    }
+  };
+
+
   useEffect(() => {
-    if (result && resultsRef.current) {
+    if ((result && resultsRef.current) || (heatMapData.length > 0 && resultsRef.current) || (recommendations && recommendations.length > 0 && resultsRef.current)) {
       resultsRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [result]);
+  }, [result, heatMapData, recommendations]); // Listen to heatmapData and recommendations too
 
   const handlePriceUpdate = useCallback((price: number) => {
     setAutoPrice(price);
@@ -161,7 +220,6 @@ export default function OptionCalculator() {
     setStockData(data);
   }, []);
 
-  // New callback to receive recommendations from TradingRecommendations
   const handleRecommendationsGenerated = useCallback((generatedRecs: OptionRecommendation[]) => {
     setRecommendations(generatedRecs);
   }, []);
@@ -352,23 +410,60 @@ export default function OptionCalculator() {
           </div>
         )}
 
-        {/* Generate Heat Map Button */}
-        <div className="bg-gray-50 rounded-xl p-4">
-          <h4 className="text-lg font-semibold text-gray-800 mb-3">Volatility Heat Map</h4>
-          <button
-            onClick={() => setHeatMapGenerated(true)}
-            disabled={!canCalculate || validateInputs() !== null}
-            className={`
-              w-full px-6 py-3 rounded-xl font-semibold transition-all duration-200
-              ${canCalculate && validateInputs() === null
-                ? "bg-green-500 text-white hover:bg-green-600"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-              }
-            `}
-          >
-            Generate Volatility Heat Map
-          </button>
-        </div>
+        {/* Generate Heat Map Button (Moved from HeatMap.tsx) */}
+        <section className="bg-gray-50 rounded-xl p-4 space-y-4">
+            <h4 className="text-lg font-semibold text-gray-800">Volatility Heat Map Generation</h4>
+            <p className="text-sm text-gray-600">
+                Generate a sensitivity analysis showing option prices across a range of volatilities.
+            </p>
+            <motion.button
+                whileHover={{ scale: (canCalculate && validateInputs() === null) ? 1.02 : 1 }}
+                whileTap={{ scale: (canCalculate && validateInputs() === null) ? 0.98 : 1 }}
+                onClick={generateHeatMap}
+                disabled={isGeneratingHeatMap || !canCalculate || validateInputs() !== null}
+                className={`
+                    w-full px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg
+                    ${(canCalculate && validateInputs() === null)
+                        ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 hover:shadow-xl"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }
+                `}
+            >
+                {isGeneratingHeatMap ? (
+                    <div className="flex items-center justify-center">
+                        <svg
+                            className="animate-spin -ml-1 mr-3 h-5 w-5 text-current"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                        >
+                            <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                            />
+                            <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                        </svg>
+                        Generating Heat Map...
+                    </div>
+                ) : (
+                    "Generate Volatility Heat Map"
+                )}
+            </motion.button>
+            {heatMapError && (
+              <div className="rounded-xl bg-red-50 border border-red-200 p-4 mt-2">
+                <p className="text-sm text-red-800">{heatMapError}</p>
+              </div>
+            )}
+        </section>
+
 
         {/* Trading Recommendations Component - Stays on the left for inputs */}
         <section className="space-y-4">
@@ -377,8 +472,8 @@ export default function OptionCalculator() {
                 Enter current market prices to get buy/sell recommendations based on theoretical values.
             </p>
             <TradingRecommendations
-                result={result} // Pass the calculated result to TradingRecommendations
-                onGenerateRecommendations={handleRecommendationsGenerated} // Pass the new callback
+                result={result}
+                onGenerateRecommendations={handleRecommendationsGenerated}
             />
         </section>
 
@@ -404,7 +499,7 @@ export default function OptionCalculator() {
           )}
 
           {/* Stock Data Display */}
-          {stockData && ( // Only show stock data if it exists (relevant to auto mode)
+          {stockData && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -424,7 +519,7 @@ export default function OptionCalculator() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-3"
+              className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm space-y-3"
             >
               <h4 className="font-semibold text-gray-800">Option Pricing</h4>
               {[
@@ -439,33 +534,22 @@ export default function OptionCalculator() {
                 >
                   <span className="text-gray-700 font-medium">{label}</span>
                   <span className={`font-bold ${color}`}>
-                    {/* Check for null explicitly for display */}
                     {typeof value === 'number' && value !== null ? value.toFixed(4) : 'N/A'}
-                    {label === "Implied Volatility" && typeof value === 'number' && value !== null ? '%' : ''} {/* Add % for IV */}
+                    {label === "Implied Volatility" && typeof value === 'number' && value !== null ? '%' : ''}
                   </span>
                 </div>
               ))}
             </motion.div>
           )}
 
-          {/* Heat Map Results */}
-          {heatMapGenerated && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"
-            >
-              <h4 className="font-semibold text-gray-800 mb-3">Volatility Heat Map</h4>
-              {/* HeatMap component itself will handle rendering logic based on its props */}
-              <HeatMap
-                optionInputs={getOptionInputs()}
-                canGenerate={true} // Assuming true here means data can be generated and displayed
-                displayOnly={true} // Tells HeatMap to only display, not generate a button
-              />
-            </motion.div>
+          {/* Heat Map Results (Display only, receives data) */}
+          {heatMapData.length > 0 && ( // Only render if data exists
+            <HeatMap
+              heatMapData={heatMapData} // Pass the generated data
+            />
           )}
 
-          {/* NEW: Trading Recommendations & Analysis Section */}
+          {/* Trading Recommendations & Analysis Section */}
           {recommendations && recommendations.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -497,9 +581,8 @@ export default function OptionCalculator() {
             </motion.div>
           )}
 
-
           {/* Empty State */}
-          {!result && !stockData && !heatMapGenerated && !recommendations && (
+          {!result && !stockData && heatMapData.length === 0 && !recommendations && (
             <div className="h-full flex items-center justify-center text-gray-400">
               <div className="text-center">
                 <p className="text-sm">Calculate options or fetch stock data to see results here</p>
