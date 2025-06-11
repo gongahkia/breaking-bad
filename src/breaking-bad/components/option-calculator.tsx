@@ -9,7 +9,11 @@ import HeatMap from "./VolatilityHeatMap";
 import TradingRecommendations from "./TradingRecommendations";
 import { CalculationResult, FormData, OptionInputs, OptionRecommendation, HeatMapData, StockData } from "./types";
 
-export default function OptionCalculator() {
+interface OptionCalculatorProps {
+  onResultChange?: (result: CalculationResult | null) => void;
+}
+
+export default function OptionCalculator({ onResultChange }: OptionCalculatorProps) {
   const [volatilityPercent, setVolatilityPercent] = useState(16);
   const [interestRatePercent, setInterestRatePercent] = useState(5);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -73,12 +77,12 @@ export default function OptionCalculator() {
     return null;
   }, [priceMode, autoPrice, manualPrice, formData, volatilityPercent, interestRatePercent]);
 
-
   async function handleCalculate() {
     const validationError = validateInputs();
     if (validationError) {
       setError(validationError);
       setResult(null);
+      onResultChange?.(null);
       setHeatMapData([]); // Clear heat map data if validation fails
       setRecommendations(null); // Clear recommendations if validation fails
       return;
@@ -86,6 +90,7 @@ export default function OptionCalculator() {
     setIsCalculating(true);
     setError(null);
     setResult(null); // Clear previous results before new calculation
+    onResultChange?.(null);
     setHeatMapData([]); // Clear heat map data on new calculation
     setRecommendations(null); // Clear previous recommendations on new calculation
 
@@ -103,10 +108,12 @@ export default function OptionCalculator() {
 
       const calculationResult = await calculateOption(inputs);
       setResult(calculationResult);
+      onResultChange?.(calculationResult);
     } catch (err) {
       console.error("Calculation failed:", err);
       setError("Failed to calculate option prices. Please check your inputs and try again.");
       setResult(null);
+      onResultChange?.(null);
     } finally {
       setIsCalculating(false);
     }
@@ -120,11 +127,12 @@ export default function OptionCalculator() {
       setStockData(null);
     }
     setResult(null);
+    onResultChange?.(null);
     setHeatMapData([]); // Clear heat map data when mode changes
     setRecommendations(null);
     setError(null);
     setHeatMapError(null); // Clear heatmap specific error
-  }, [priceMode]);
+  }, [priceMode, onResultChange]);
 
   const handleTickerSubmit = () => {
     if (tickerInput.trim()) {

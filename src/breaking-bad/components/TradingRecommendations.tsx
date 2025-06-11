@@ -2,12 +2,12 @@
 "use client";
 
 import { useState } from 'react';
-import { CalculationResult, OptionRecommendation } from '../app/components/types'; // Import OptionRecommendation
-import { generateRecommendations } from '../app/actions/recommendations'; // Assuming you have this server action
+import { CalculationResult, OptionRecommendation } from './types';
+import { generateRecommendations } from '../app/actions/recommendations';
 
 interface TradingRecommendationsProps {
-  result: CalculationResult | null; // The calculated option prices
-  onGenerateRecommendations: (recommendations: OptionRecommendation[]) => void; // New prop: callback to send recommendations to parent
+  result: CalculationResult | null;
+  onGenerateRecommendations: (recommendations: OptionRecommendation[]) => void;
 }
 
 export default function TradingRecommendations({ result, onGenerateRecommendations }: TradingRecommendationsProps) {
