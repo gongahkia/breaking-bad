@@ -564,21 +564,20 @@ export default function OptionCalculator({ onResultChange }: OptionCalculatorPro
             >
               <h4 className="font-semibold text-gray-800 mb-2">Trading Recommendations & Analysis</h4>
               {recommendations.map((rec, index) => (
-                <div key={index} className="border p-3 rounded-md shadow-sm bg-gray-50">
-                  <p>
-                    <strong>{rec.type === 'call' ? 'Call Option' : 'Put Option'} {rec.action.toUpperCase()}</strong>
-                    <span className={`ml-2 px-2 py-1 rounded-full text-xs font-semibold ${
-                      rec.confidence === 'high' ? 'bg-green-200 text-green-800' :
-                      rec.confidence === 'medium' ? 'bg-yellow-200 text-yellow-800' :
-                      'bg-red-200 text-red-800'
-                    }`}>
-                      {rec.confidence.toUpperCase()}
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold text-gray-900">
+                      {rec.type === 'call' ? 'Call Option' : 'Put Option'}
                     </span>
-                  </p>
-                  <p className="text-sm mt-1">{rec.reason}</p>
-                  <p className="text-xs text-gray-600 mt-2">
-                    Theoretical Price: ${rec.theoreticalPrice.toFixed(2)} | Market Price: ${rec.marketPrice.toFixed(2)} | Difference: ${rec.priceDifference.toFixed(2)}
-                  </p>
+                    <span className={`px-2 py-1 rounded text-sm font-medium ${
+                      rec.action === 'buy' ? 'bg-green-100 text-green-800' :
+                      rec.action === 'sell' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {rec.action.toUpperCase()}
+                    </span>
+                  </div>
+                  <p className="text-gray-600">{rec.reason}</p>
                 </div>
               ))}
               <p className="text-xs text-gray-500 mt-4">
