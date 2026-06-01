@@ -1,0 +1,60 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "dashboard": {
+      ".read": true,
+      ".write": false
+    },
+    "announcements": {
+      ".read": true,
+      ".write": false
+    },
+    "markets": {
+      ".read": true,
+      ".write": false
+    },
+    "userPositions": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "nfts": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "transactions": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "leaderboard": {
+      ".read": true,
+      ".write": false
+    },
+    "poolValueHistory": {
+      ".read": true,
+      ".write": false
+    },
+    "vaults": {
+      ".read": true,
+      ".write": false
+    },
+    "allVaults": {
+      ".read": true,
+      ".write": false
+    }
+  },
+  "interest_submissions": {
+    ".read": true,
+    ".write": true
+  }
+}
