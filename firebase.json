@@ -1,5 +1,0 @@
-{
-  "database": {
-    "rules": "scripts/firebase-setup.json"
-  }
-}
